@@ -96,7 +96,7 @@ export function init() {
 	let hexGeometry = new CylinderGeometry(
 		SIZE * 0.95,
 		SIZE * 0.95,
-		SIZE * 0.02,
+		SIZE * 0.1,
 		6
 	);
 	hexGeometry.rotateX(Math.PI * 0.5);
@@ -205,14 +205,6 @@ export function init() {
 			}
 		plane.applyMatrix4(
 			new Matrix4().makeTranslation(0, 0, 0.5)
-		);
-		setTimeout(
-			() =>
-				canvas.classList.replace(
-					"opacity-0",
-					"opacity-100"
-				),
-			300
 		);
 	};
 
