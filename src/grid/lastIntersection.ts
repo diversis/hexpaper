@@ -1,3 +1,5 @@
 let lastIntersectionId: number | undefined;
-export const setLastIntersectionId = (id: number) => lastIntersectionId;
-export const getLastIntersectionId = () => lastIntersectionId;
+export const setLastIntersectionId = (id: number) =>
+	(lastIntersectionId = id);
+export const getLastIntersectionId = () =>
+	lastIntersectionId;
