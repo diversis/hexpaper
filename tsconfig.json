@@ -21,18 +21,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
-    "paths": {
-      "css/*": [
-        "src/css/*"
-      ],
-      "@/*": [
-        "src/*"
-      ],
-      "@lib/*": [
-        "src/lib/*"
-      ],
-    }
   },
   "include": [
     "src"

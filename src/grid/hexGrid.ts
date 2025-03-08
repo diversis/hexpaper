@@ -24,14 +24,14 @@ import {
 	RenderPass,
 } from "three/addons";
 
-import debounce from "@lib/utils/debounce";
+import debounce from "../lib/utils/debounce";
 import {
 	BASE_COLOR,
 	BLOOM_SCENE,
 	CAMERA_Z_DISTANCE,
 	SIZE,
 	UNIT,
-} from "@/lib/constants/utils";
+} from "../lib/constants/utils";
 import { addHexCell } from "./addHexCell";
 import { animateMove } from "./animateMove";
 import { animateClick } from "./animateClick";
