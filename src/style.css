@@ -127,3 +127,10 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
+
+.webcanvas {
+	opacity: 0;
+	transition: opacity 0.25s
+		cubic-bezier(0.7, 0.69, 0, 0.83);
+	will-change: [opacity];
+}
