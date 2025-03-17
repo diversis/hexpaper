@@ -36,7 +36,6 @@ export const animateClick = ({
 	raycaster,
 	mouse,
 }: Props) => {
-	// directLight.position.set(mouse.x, mouse.y, 5);
 	const { tempCell, instanceId } = getIntersection({
 		repeat,
 		lastIntersectionId,
@@ -50,7 +49,6 @@ export const animateClick = ({
 	setRNGColor(plane, instanceId);
 	let i = 0;
 	let clock = new Clock();
-	// let rngScale = Math.random() * 2 + 5;
 	const tick = () => {
 		if (!plane) return;
 		// console.log(i);
@@ -98,7 +96,6 @@ export const animateClick = ({
 			tempCell.position.z =
 				Math.sin(tempCell.position.z * (6 - i)) *
 				0.125;
-			// console.log(Math.cos(Math.PI));
 			tempCell.rotation.set(
 				Math.cos(
 					0.5 * Math.PI -
@@ -146,24 +143,16 @@ export const animateClick = ({
 				) *
 					Math.PI *
 					0.0625;
-
-			// if(i==6){
-			//   setBaseColor(plane, instanceId);
-			// }
 		}
-		// console.log(tempCell.rotation);
 		tempCell.updateMatrix();
-		// console.log(tempCell.scale.z);
 		plane.setMatrixAt(instanceId, tempCell.matrix);
 		plane.instanceMatrix.needsUpdate = true;
 		if (i < 6) {
-			// let t = Date.now() - clock;
 			i += 0.1 * t;
 
 			requestRenderIfNotRequested();
 			window.requestAnimationFrame(tick);
 		}
 	};
-	// requestRenderIfNotRequested();
 	window.requestAnimationFrame(tick);
 };

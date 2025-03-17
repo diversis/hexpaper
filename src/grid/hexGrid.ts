@@ -49,7 +49,7 @@ const cellColor = new Color(BASE_COLOR);
 const raycaster = new Raycaster();
 const mouse = new Vector2(1, 1);
 
-const fov = 70;
+const fov = 80;
 
 let lastIntersectionId: number | undefined;
 export const setLastIntersectionId = (id: number) =>
@@ -103,6 +103,8 @@ export function init() {
 
 	let hexMesh = new MeshBasicMaterial({
 		color: BASE_COLOR,
+		transparent: true,
+		opacity: 0.8,
 	});
 
 	const visibleHeightAtZDepth = (
