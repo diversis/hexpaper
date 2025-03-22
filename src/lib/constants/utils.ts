@@ -20,10 +20,13 @@ export const SIZE = 1,
 	).applyAxisAngle(AXIS, -ANGLE),
 	BLOOM_PARAMS = {
 		threshold: 0,
-		strength: 0.2,
-		radius: 0.01,
+		strength: 3,
+		radius: 0.02,
 		exposure: 1,
 	},
 	BLOOM_SCENE = 1,
 	BASE_COLOR = 0x14242f,
-	baseColor = new Color(BASE_COLOR);
+	baseColor = new Color(BASE_COLOR),
+	ANIMATION_SPEED = 5,
+	TILE_OPACITY = 0.2,
+	TILE_HEIGHT = 1;

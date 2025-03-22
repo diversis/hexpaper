@@ -10,12 +10,13 @@ import {
 	Color,
 	Object3D,
 	CylinderGeometry,
-	DirectionalLight,
 	ShaderMaterial,
-	MeshBasicMaterial,
 	Layers,
+	AmbientLight,
+	DirectionalLight,
+	MeshPhysicalMaterial,
 } from "three";
-
+import "three";
 import {
 	EffectComposer,
 	OutputPass,
@@ -27,9 +28,12 @@ import {
 import debounce from "../lib/utils/debounce";
 import {
 	BASE_COLOR,
+	BLOOM_PARAMS,
 	BLOOM_SCENE,
 	CAMERA_Z_DISTANCE,
 	SIZE,
+	TILE_HEIGHT,
+	TILE_OPACITY,
 	UNIT,
 } from "../lib/constants/utils";
 import { addHexCell } from "./addHexCell";
@@ -62,7 +66,7 @@ export function init() {
 		fov,
 		window.innerWidth / window.innerHeight,
 		0.1,
-		50
+		30
 	);
 
 	camera.position.set(0, 0, CAMERA_Z_DISTANCE);
@@ -96,15 +100,15 @@ export function init() {
 	let hexGeometry = new CylinderGeometry(
 		SIZE * 0.95,
 		SIZE * 0.95,
-		SIZE * 0.1,
+		SIZE * TILE_HEIGHT,
 		6
 	);
 	hexGeometry.rotateX(Math.PI * 0.5);
 
-	let hexMesh = new MeshBasicMaterial({
+	let hexMesh = new MeshPhysicalMaterial({
 		color: BASE_COLOR,
 		transparent: true,
-		opacity: 0.8,
+		opacity: TILE_OPACITY,
 	});
 
 	const visibleHeightAtZDepth = (
@@ -130,7 +134,8 @@ export function init() {
 		const height = visibleHeightAtZDepth(depth, camera);
 		return height * camera.aspect;
 	};
-
+	let centerX = 0;
+	let centerY = 0;
 	// HEX GRID
 	const addGrid = () => {
 		if (!scene || !camera) return;
@@ -162,18 +167,15 @@ export function init() {
 		plane.position.set(0, 0, 0);
 
 		scene.add(plane);
-
+		centerX = UNIT * 0.5 * totalCols;
+		centerY = SIZE * 0.5 * (totalRows + 1);
 		camera.position.set(
-			UNIT * 0.5 * totalCols,
-			SIZE * 0.5 * (totalRows + 1),
+			centerX,
+			centerY,
 			CAMERA_Z_DISTANCE
 		);
 
-		camera.lookAt(
-			UNIT * 0.5 * totalCols,
-			SIZE * 0.5 * (totalRows + 1),
-			0
-		);
+		camera.lookAt(centerX, centerY, 0);
 		let iCount = 0;
 
 		for (let r = 0; r < totalRows; r++)
@@ -211,14 +213,27 @@ export function init() {
 	};
 
 	// Lights
-	const lightsColor = 0xffffff;
-	const intensity = 1.5;
-	const directLight = new DirectionalLight(
-		lightsColor,
-		intensity
+	const ambiLight = new AmbientLight(
+		new Color("0xffffff"),
+		6
 	);
-	directLight.position.set(0, -2, 10);
-	scene.add(directLight);
+	scene.add(ambiLight);
+
+	const dirLight1 = new DirectionalLight(
+		new Color("0x33ffff"),
+		0.5
+	);
+	dirLight1.position.set(4 * UNIT, 10 * UNIT, UNIT);
+	dirLight1.lookAt(centerX, centerY, 0);
+	// scene.add(dirLight1);
+
+	const dirLight2 = new DirectionalLight(
+		new Color("0xffff33"),
+		0.6
+	);
+	dirLight2.position.set(-4 * UNIT, -10 * UNIT, UNIT);
+	dirLight2.lookAt(centerX, centerY, 0);
+	scene.add(dirLight2);
 
 	// POSTPROCESSING
 	let finalComposer = new EffectComposer(renderer);
@@ -227,9 +242,9 @@ export function init() {
 
 	const bloomPass = new UnrealBloomPass(
 		new Vector2(window.innerWidth, window.innerHeight),
-		1.5,
-		0.05,
-		0.0
+		BLOOM_PARAMS.strength,
+		BLOOM_PARAMS.radius,
+		BLOOM_PARAMS.threshold
 	);
 
 	const bloomComposer = new EffectComposer(renderer);
@@ -312,8 +327,6 @@ export function init() {
 
 	//   Pointer Events
 	function onPointerDown(event: PointerEvent) {
-		// event.preventDefault();
-
 		mouse.x =
 			(event.clientX / window.innerWidth) * 2 - 1;
 		mouse.y =
@@ -329,8 +342,6 @@ export function init() {
 		});
 	}
 	function onPointerMove(event: PointerEvent) {
-		// event.preventDefault();
-
 		mouse.x =
 			(event.clientX / window.innerWidth) * 2 - 1;
 		mouse.y =
@@ -377,7 +388,6 @@ export function init() {
 			!camera
 		)
 			return;
-		// const canvas = renderer.domElement;
 		const width =
 			canvas.parentElement?.clientWidth ||
 			canvas.clientWidth;
@@ -411,6 +421,7 @@ export function init() {
 
 		camera.aspect = cWidth / cHeight;
 		camera.updateProjectionMatrix();
+
 		renderer.setSize(cWidth, cHeight);
 		bloomComposer.setSize(cWidth, cHeight);
 		finalComposer.setSize(cWidth, cHeight);
@@ -422,6 +433,6 @@ export function init() {
 		"resize",
 		requestRenderIfNotRequested
 	);
-
-	// animate();
 }
+
+onload = () => init();
