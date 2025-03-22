@@ -215,7 +215,7 @@ export function init() {
 	// Lights
 	const ambiLight = new AmbientLight(
 		new Color("0xffffff"),
-		6
+		8
 	);
 	scene.add(ambiLight);
 
