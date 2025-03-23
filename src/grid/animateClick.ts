@@ -49,11 +49,13 @@ export const animateClick = ({
 	setRNGColor(plane, instanceId);
 	let i = 0;
 	let clock = new Clock();
+
 	const tick = () => {
 		if (!plane) return;
 		// console.log(i);
 		const { phaseDepth, phaseX, phaseY } =
 			plane.userData.phases[instanceId];
+
 		clearTimeout(plane.userData.timers?.[instanceId]);
 		const timer = setTimeout(() => {
 			setBaseColor(plane, instanceId);

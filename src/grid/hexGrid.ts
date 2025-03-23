@@ -214,26 +214,34 @@ export function init() {
 
 	// Lights
 	const ambiLight = new AmbientLight(
-		new Color("0xffffff"),
-		8
+		0xffffff,
+		TILE_OPACITY > 0 ? 0.9 / TILE_OPACITY : 0
 	);
 	scene.add(ambiLight);
 
 	const dirLight1 = new DirectionalLight(
-		new Color("0x33ffff"),
-		0.5
+		0x33ffff,
+		TILE_OPACITY > 0 ? 0.4 / TILE_OPACITY : 0
 	);
-	dirLight1.position.set(4 * UNIT, 10 * UNIT, UNIT);
+	dirLight1.position.set(0, centerY * 2 + 100 * UNIT, 0);
 	dirLight1.lookAt(centerX, centerY, 0);
-	// scene.add(dirLight1);
+	scene.add(dirLight1);
 
 	const dirLight2 = new DirectionalLight(
-		new Color("0xffff33"),
-		0.6
+		0xaa55ee,
+		TILE_OPACITY > 0 ? 0.4 / TILE_OPACITY : 0
 	);
-	dirLight2.position.set(-4 * UNIT, -10 * UNIT, UNIT);
+	dirLight2.position.set(-100 * UNIT, -100 * UNIT, 0);
 	dirLight2.lookAt(centerX, centerY, 0);
 	scene.add(dirLight2);
+
+	const dirLight4 = new DirectionalLight(
+		0xeeeeee,
+		TILE_OPACITY > 0 ? 0.3 / TILE_OPACITY : 0
+	);
+	dirLight4.position.set(0, 0, 100 * UNIT);
+	dirLight4.lookAt(centerX, centerY, 0);
+	scene.add(dirLight4);
 
 	// POSTPROCESSING
 	let finalComposer = new EffectComposer(renderer);

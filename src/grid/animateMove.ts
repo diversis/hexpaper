@@ -12,7 +12,10 @@ import {
 import { getIntersection } from "./getIntersection";
 import { setRNGColor } from "./setRNGColor";
 import { setBaseColor } from "./setBaseColor";
-import { ANIMATION_SPEED } from "../lib/constants/utils";
+import {
+	ANIMATION_SPEED,
+	TILE_HEIGHT,
+} from "../lib/constants/utils";
 
 interface Props {
 	requestRenderIfNotRequested: () => void;
@@ -54,6 +57,7 @@ export const animateMove = ({
 
 		let i = 0;
 		let clock = new Clock();
+		let bloom = true;
 		const tick = () => {
 			if (!plane) return;
 			const { phaseDepth, phaseX, phaseY } =
@@ -65,6 +69,7 @@ export const animateMove = ({
 				tempCell.position.z =
 					Math.sin(phaseDepth + t) * 0.25;
 				tempCell.scale.z =
+					TILE_HEIGHT +
 					Math.sin(phaseDepth + t) * 0.5;
 				tempCell.rotation.set(
 					0,
@@ -85,20 +90,19 @@ export const animateMove = ({
 					tempCell.position.z * (6 - i) * 0.025
 				);
 				tempCell.scale.z =
-					Math.cos(tempCell.scale.z * (6 - i)) *
-					1;
+					TILE_HEIGHT -
+					Math.abs(
+						Math.sin(tempCell.scale.z * (6 - i))
+					);
 				tempCell.rotation.set(
 					0,
 					Math.cos(
 						0.5 * Math.PI -
 							0.1 *
-								Math.abs(
-									t *
-										tempCell.rotation
-											.x *
-										(6 - i) *
-										Math.sign(phaseX)
-								)
+								t *
+								tempCell.rotation.x *
+								(6 - i) *
+								Math.sign(phaseX)
 					) *
 						Math.PI *
 						0.00625,
@@ -116,11 +120,19 @@ export const animateMove = ({
 					i = 6;
 				}
 				if (
-					i == 6 &&
+					bloom &&
+					i > 4 &&
 					!plane.userData.timers[instanceId]
 				) {
 					setBaseColor(plane, instanceId);
+					bloom = false;
 				}
+			}
+			if (i == 6) {
+				tempCell.position.z = 0;
+				tempCell.rotation.set(0, 0, 0);
+				tempCell.scale.set(1, 1, 1);
+				requestRenderIfNotRequested();
 			}
 			tempCell.updateMatrix();
 			plane.setMatrixAt(instanceId, tempCell.matrix);
