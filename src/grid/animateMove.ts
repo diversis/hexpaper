@@ -16,9 +16,10 @@ import {
 	ANIMATION_SPEED,
 	TILE_HEIGHT,
 } from "../lib/constants/utils";
+import { requestRenderIfNotRequested } from "./requestRender";
 
 interface Props {
-	requestRenderIfNotRequested: () => void;
+	render: () => void;
 	plane: InstancedMesh<
 		BufferGeometry<NormalBufferAttributes>,
 		Material | Material[],
@@ -32,7 +33,7 @@ interface Props {
 }
 
 export const animateMove = ({
-	requestRenderIfNotRequested,
+	render,
 	plane,
 	repeat,
 	lastIntersectionId,
@@ -132,14 +133,14 @@ export const animateMove = ({
 				tempCell.position.z = 0;
 				tempCell.rotation.set(0, 0, 0);
 				tempCell.scale.set(1, 1, 1);
-				requestRenderIfNotRequested();
+				requestRenderIfNotRequested(render);
 			}
 			tempCell.updateMatrix();
 			plane.setMatrixAt(instanceId, tempCell.matrix);
 			plane.instanceMatrix.needsUpdate = true;
 			if (i < 6) {
 				i += 0.1 * t;
-				requestRenderIfNotRequested();
+				requestRenderIfNotRequested(render);
 				window.requestAnimationFrame(tick);
 			}
 		};

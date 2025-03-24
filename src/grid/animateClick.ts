@@ -12,9 +12,10 @@ import {
 import { getIntersection } from "./getIntersection";
 import { setRNGColor } from "./setRNGColor";
 import { setBaseColor } from "./setBaseColor";
+import { requestRenderIfNotRequested } from "./requestRender";
 
 interface Props {
-	requestRenderIfNotRequested: () => void;
+	render: () => void;
 	plane: InstancedMesh<
 		BufferGeometry<NormalBufferAttributes>,
 		Material | Material[],
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export const animateClick = ({
-	requestRenderIfNotRequested,
+	render,
 	plane,
 	repeat,
 	lastIntersectionId,
@@ -152,7 +153,7 @@ export const animateClick = ({
 		if (i < 6) {
 			i += 0.1 * t;
 
-			requestRenderIfNotRequested();
+			requestRenderIfNotRequested(render);
 			window.requestAnimationFrame(tick);
 		}
 	};

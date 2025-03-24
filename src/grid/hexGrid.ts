@@ -31,6 +31,7 @@ import {
 	BLOOM_PARAMS,
 	BLOOM_SCENE,
 	CAMERA_Z_DISTANCE,
+	FPS_LIMIT,
 	SIZE,
 	TILE_HEIGHT,
 	TILE_OPACITY,
@@ -39,6 +40,10 @@ import {
 import { addHexCell } from "./addHexCell";
 import { animateMove } from "./animateMove";
 import { animateClick } from "./animateClick";
+import {
+	requestRenderIfNotRequested,
+	setRenderRequested,
+} from "./requestRender";
 
 let camera: PerspectiveCamera | undefined;
 let scene: Scene | undefined;
@@ -295,20 +300,19 @@ export function init() {
 
 	// Rendering On Demand
 
-	let renderRequested = false;
-	const render = () => {
-		renderRequested = false;
-
+	let lastFrame = performance.now();
+	function render() {
+		setRenderRequested(false);
 		if (!scene || !camera || !renderer) return;
 
 		if (needsResize()) resizeRendererToDisplaySize();
-		renderWithEffects();
-	};
+		const now = performance.now();
+		const deltaTime = now - lastFrame;
+		const fpsMSLimit = 1000 / FPS_LIMIT;
+		if (deltaTime > fpsMSLimit) {
+			renderWithEffects();
 
-	function requestRenderIfNotRequested() {
-		if (!renderRequested && !!render) {
-			renderRequested = true;
-			requestAnimationFrame(render);
+			lastFrame = now;
 		}
 	}
 
@@ -318,7 +322,7 @@ export function init() {
 	addGrid();
 	renderWithEffects();
 
-	requestRenderIfNotRequested();
+	requestRenderIfNotRequested(render);
 
 	function renderWithEffects() {
 		if (!renderer) return;
@@ -341,7 +345,7 @@ export function init() {
 			-(event.clientY / window.innerHeight) * 2 + 1;
 		if (!plane || !camera || !scene) return;
 		animateClick({
-			requestRenderIfNotRequested,
+			render,
 			plane,
 			repeat: true,
 			camera,
@@ -356,7 +360,7 @@ export function init() {
 			-(event.clientY / window.innerHeight) * 2 + 1;
 		if (!plane || !camera) return;
 		animateMove({
-			requestRenderIfNotRequested,
+			render,
 			plane,
 			repeat: false,
 			camera,
@@ -374,7 +378,7 @@ export function init() {
 			-(touch.pageY / window.innerHeight) * 2 + 1;
 		if (!plane || !camera) return;
 		animateMove({
-			requestRenderIfNotRequested,
+			render,
 			plane,
 			repeat: false,
 			camera,
@@ -435,11 +439,10 @@ export function init() {
 		finalComposer.setSize(cWidth, cHeight);
 
 		addGrid();
-		requestRenderIfNotRequested();
+		requestRenderIfNotRequested(render);
 	}, 200);
-	window.addEventListener(
-		"resize",
-		requestRenderIfNotRequested
+	window.addEventListener("resize", () =>
+		requestRenderIfNotRequested(render)
 	);
 }
 
