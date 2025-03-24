@@ -19,7 +19,6 @@ import {
 import { requestRenderIfNotRequested } from "./requestRender";
 
 interface Props {
-	render: () => void;
 	plane: InstancedMesh<
 		BufferGeometry<NormalBufferAttributes>,
 		Material | Material[],
@@ -33,7 +32,6 @@ interface Props {
 }
 
 export const animateMove = ({
-	render,
 	plane,
 	repeat,
 	lastIntersectionId,
@@ -133,14 +131,14 @@ export const animateMove = ({
 				tempCell.position.z = 0;
 				tempCell.rotation.set(0, 0, 0);
 				tempCell.scale.set(1, 1, 1);
-				requestRenderIfNotRequested(render);
+				requestRenderIfNotRequested();
 			}
 			tempCell.updateMatrix();
 			plane.setMatrixAt(instanceId, tempCell.matrix);
 			plane.instanceMatrix.needsUpdate = true;
 			if (i < 6) {
 				i += 0.1 * t;
-				requestRenderIfNotRequested(render);
+				requestRenderIfNotRequested();
 				window.requestAnimationFrame(tick);
 			}
 		};
