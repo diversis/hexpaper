@@ -15,6 +15,7 @@ import {
 	AmbientLight,
 	DirectionalLight,
 	MeshPhysicalMaterial,
+	Light,
 } from "three";
 import "three";
 import {
@@ -50,10 +51,15 @@ let camera: PerspectiveCamera | undefined;
 let scene: Scene | undefined;
 let renderer: WebGLRenderer | undefined;
 let plane: InstancedMesh | undefined;
+let hexGeometry: CylinderGeometry | null = null;
+let hexMesh: MeshPhysicalMaterial | null = null;
+let shaderMaterial: ShaderMaterial | null = null;
 
 let cWidth = 0;
 let cHeight = 0;
 
+let bloomPass: UnrealBloomPass | null = null;
+let mixPass: ShaderPass | null = null;
 let bloomComposer: EffectComposer | null = null;
 let finalComposer: EffectComposer | null = null;
 let lastFrame = performance.now();
@@ -62,6 +68,8 @@ let centerX = 0;
 let centerY = 0;
 
 let dummy = new Object3D();
+
+let lights: Light[] = [];
 
 const bloomLayer = new Layers();
 bloomLayer.set(BLOOM_SCENE);
@@ -73,13 +81,8 @@ const mouse = new Vector2(1, 1);
 
 const fov = 80;
 
-let lastIntersectionId: number | undefined;
-export const setLastIntersectionId = (id: number) =>
-	(lastIntersectionId = id);
-export const getLastIntersectionId = () =>
-	lastIntersectionId;
-
 export function init() {
+	_clearScene();
 	camera = new PerspectiveCamera(
 		fov,
 		window.innerWidth / window.innerHeight,
@@ -99,7 +102,7 @@ export function init() {
 		alpha: true,
 	});
 
-	scene = new Scene();
+	if (!scene) scene = new Scene();
 
 	cWidth =
 		canvas.parentElement?.clientWidth ||
@@ -121,7 +124,7 @@ export function init() {
 
 	const renderScene = new RenderPass(scene, camera);
 
-	const bloomPass = new UnrealBloomPass(
+	bloomPass = new UnrealBloomPass(
 		new Vector2(window.innerWidth, window.innerHeight),
 		BLOOM_PARAMS.strength,
 		BLOOM_PARAMS.radius,
@@ -132,33 +135,29 @@ export function init() {
 	bloomComposer.renderToScreen = false;
 	bloomComposer.addPass(renderScene);
 	bloomComposer.addPass(bloomPass);
-
-	const mixPass = new ShaderPass(
-		new ShaderMaterial({
-			uniforms: {
-				baseTexture: { value: null },
-				bloomTexture: {
-					value: bloomComposer.renderTarget2
-						.texture,
-				},
+	shaderMaterial = new ShaderMaterial({
+		uniforms: {
+			baseTexture: { value: null },
+			bloomTexture: {
+				value: bloomComposer.renderTarget2.texture,
 			},
-			vertexShader: `
-      varying vec2 vUv;
-  		void main() {
-  			vUv = uv;
-  			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-  		}`,
-			fragmentShader: `
-      uniform sampler2D baseTexture;
-  		uniform sampler2D bloomTexture;
-  		varying vec2 vUv;
-  		void main() {
-  			gl_FragColor = ( texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ) );
-  		}`,
-			defines: {},
-		}),
-		"baseTexture"
-	);
+		},
+		vertexShader: `
+varying vec2 vUv;
+  void main() {
+	  vUv = uv;
+	  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  }`,
+		fragmentShader: `
+uniform sampler2D baseTexture;
+  uniform sampler2D bloomTexture;
+  varying vec2 vUv;
+  void main() {
+	  gl_FragColor = ( texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ) );
+  }`,
+		defines: {},
+	});
+	mixPass = new ShaderPass(shaderMaterial, "baseTexture");
 	mixPass.needsSwap = true;
 
 	const outputPass = new OutputPass();
@@ -173,65 +172,76 @@ export function init() {
 	// initial render
 	if (!camera || !scene) return;
 
-	_addGrid();
 	_renderWithEffects();
 
 	requestRenderIfNotRequested();
 
-	//   Pointer Events
-	function onPointerDown(event: PointerEvent) {
-		mouse.x =
-			(event.clientX / window.innerWidth) * 2 - 1;
-		mouse.y =
-			-(event.clientY / window.innerHeight) * 2 + 1;
-		if (!plane || !camera || !scene) return;
-		animateClick({
-			plane,
-			repeat: true,
-			camera,
-			raycaster,
-			mouse,
-		});
-	}
-	function onPointerMove(event: PointerEvent) {
-		mouse.x =
-			(event.clientX / window.innerWidth) * 2 - 1;
-		mouse.y =
-			-(event.clientY / window.innerHeight) * 2 + 1;
-		if (!plane || !camera) return;
-		animateMove({
-			plane,
-			repeat: false,
-			camera,
-			raycaster,
-			mouse,
-		});
-	}
+	_resetEventListeners();
+	canvas.style.opacity = "1";
+}
 
-	function onTouchMove(event: TouchEvent) {
-		// event.preventDefault();
-		const touch =
-			event.touches[0] || event.changedTouches[0];
-		mouse.x = (touch.pageX / window.innerWidth) * 2 - 1;
-		mouse.y =
-			-(touch.pageY / window.innerHeight) * 2 + 1;
-		if (!plane || !camera) return;
-		animateMove({
-			plane,
-			repeat: false,
-			camera,
-			raycaster,
-			mouse,
-		});
-	}
+const _resetEventListeners = () => {
+	_removeEventListeners();
+	_addEventListeners();
+};
 
-	document.addEventListener("pointermove", onPointerMove);
-	document.addEventListener("touchmove", onTouchMove);
-	document.addEventListener("pointerdown", onPointerDown);
+const _addEventListeners = () => {
+	document.addEventListener(
+		"pointermove",
+		_onPointerMove
+	);
+	document.addEventListener("touchmove", _onTouchMove);
+	document.addEventListener(
+		"pointerdown",
+		_onPointerDown
+	);
 
 	window.addEventListener("resize", () =>
 		_resizeRendererToDisplaySize()
 	);
+};
+
+//   Pointer Events
+function _onPointerDown(event: PointerEvent) {
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+	if (!plane || !camera || !scene) return;
+
+	animateClick({
+		plane,
+		repeat: true,
+		camera,
+		raycaster,
+		mouse,
+	});
+}
+function _onPointerMove(event: PointerEvent) {
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+	if (!plane || !camera) return;
+	animateMove({
+		plane,
+		repeat: false,
+		camera,
+		raycaster,
+		mouse,
+	});
+}
+
+function _onTouchMove(event: TouchEvent) {
+	// event.preventDefault();
+	const touch =
+		event.touches[0] || event.changedTouches[0];
+	mouse.x = (touch.pageX / window.innerWidth) * 2 - 1;
+	mouse.y = -(touch.pageY / window.innerHeight) * 2 + 1;
+	if (!plane || !camera) return;
+	animateMove({
+		plane,
+		repeat: false,
+		camera,
+		raycaster,
+		mouse,
+	});
 }
 
 const _resizeRendererToDisplaySize = debounce(() => {
@@ -246,16 +256,20 @@ const _resizeRendererToDisplaySize = debounce(() => {
 		return;
 
 	console.log("needs resize");
-	renderer.setSize(cWidth, cHeight, false);
+	init();
+	// renderer.setSize(cWidth, cHeight, false);
 
-	camera.aspect = cWidth / cHeight;
-	camera.updateProjectionMatrix();
+	// camera.aspect = cWidth / cHeight;
+	// camera.updateProjectionMatrix();
 
-	renderer.setSize(cWidth, cHeight);
-	bloomComposer.setSize(cWidth, cHeight);
-	finalComposer.setSize(cWidth, cHeight);
+	// renderer.setSize(cWidth, cHeight);
+	// bloomComposer.setSize(cWidth, cHeight);
+	// finalComposer.setSize(cWidth, cHeight);
 
-	_addGrid();
+	// _disposeGrid();
+	// _addGrid();
+	// _disposeLights();
+	// _addLights();
 	requestRenderIfNotRequested();
 }, 200);
 
@@ -263,7 +277,7 @@ export function render() {
 	setRenderRequested(false);
 	if (!scene || !camera || !renderer) return;
 
-	if (needsResize()) _resizeRendererToDisplaySize();
+	if (_needsResize()) _resizeRendererToDisplaySize();
 	const now = performance.now();
 	const deltaTime = now - lastFrame;
 	const fpsMSLimit = 1000 / FPS_LIMIT;
@@ -274,7 +288,7 @@ export function render() {
 }
 
 // Resize events
-const needsResize = () => {
+const _needsResize = () => {
 	if (
 		!renderer ||
 		!canvas ||
@@ -319,7 +333,7 @@ function _renderWithEffects() {
 const _addGrid = () => {
 	if (!scene || !camera) return;
 
-	const hexGeometry = new CylinderGeometry(
+	hexGeometry = new CylinderGeometry(
 		SIZE * 0.95,
 		SIZE * 0.95,
 		SIZE * TILE_HEIGHT,
@@ -327,7 +341,7 @@ const _addGrid = () => {
 	);
 	hexGeometry.rotateX(Math.PI * 0.5);
 
-	const hexMesh = new MeshPhysicalMaterial({
+	hexMesh = new MeshPhysicalMaterial({
 		color: BASE_COLOR,
 		transparent: true,
 		opacity: TILE_OPACITY,
@@ -343,7 +357,7 @@ const _addGrid = () => {
 	);
 
 	let cellCount = totalRows * totalCols;
-	plane?.removeFromParent();
+
 	plane = new InstancedMesh(
 		hexGeometry,
 		hexMesh,
@@ -356,6 +370,7 @@ const _addGrid = () => {
 	plane.position.set(0, 0, 0);
 
 	scene.add(plane);
+
 	centerX = UNIT * 0.5 * totalCols;
 	centerY = SIZE * 0.5 * (totalRows + 1);
 	camera.position.set(
@@ -429,6 +444,7 @@ const _addLights = () => {
 		TILE_OPACITY > 0 ? 0.9 / TILE_OPACITY : 0
 	);
 	scene.add(ambiLight);
+	lights.push(ambiLight);
 
 	const dirLight1 = new DirectionalLight(
 		0x33ffff,
@@ -437,6 +453,7 @@ const _addLights = () => {
 	dirLight1.position.set(0, centerY * 2 + 100 * UNIT, 0);
 	dirLight1.lookAt(centerX, centerY, 0);
 	scene.add(dirLight1);
+	lights.push(dirLight1);
 
 	const dirLight2 = new DirectionalLight(
 		0xaa55ee,
@@ -445,14 +462,77 @@ const _addLights = () => {
 	dirLight2.position.set(-100 * UNIT, -100 * UNIT, 0);
 	dirLight2.lookAt(centerX, centerY, 0);
 	scene.add(dirLight2);
+	lights.push(dirLight2);
 
-	const dirLight4 = new DirectionalLight(
+	const dirLight3 = new DirectionalLight(
 		0xeeeeee,
 		TILE_OPACITY > 0 ? 0.3 / TILE_OPACITY : 0
 	);
-	dirLight4.position.set(0, 0, 100 * UNIT);
-	dirLight4.lookAt(centerX, centerY, 0);
-	scene.add(dirLight4);
+	dirLight3.position.set(0, 0, 100 * UNIT);
+	dirLight3.lookAt(centerX, centerY, 0);
+	scene.add(dirLight3);
+	lights.push(dirLight3);
+};
+
+// Disposal
+
+const _clearScene = () => {
+	if (scene) {
+		scene.clear();
+		_disposeGrid();
+		_disposeLights();
+		_disposeRenderer();
+		console.log("cleared scene: ", scene?.children);
+	}
+};
+
+const _disposeRenderer = () => {
+	mixPass?.dispose();
+	mixPass = null;
+	bloomPass?.dispose();
+	bloomPass = null;
+	shaderMaterial?.dispose();
+	shaderMaterial = null;
+	bloomComposer?.dispose();
+	bloomComposer = null;
+	finalComposer?.dispose();
+	finalComposer = null;
+	renderer?.dispose();
+	renderer = undefined;
+};
+
+const _disposeLights = () => {
+	lights.forEach((light) => {
+		light?.dispose();
+	});
+	lights = [];
+};
+
+const _disposeGrid = () => {
+	plane?.dispose();
+	plane = undefined;
+	hexGeometry?.dispose();
+	hexGeometry = null;
+	hexMesh?.map?.dispose();
+	hexMesh?.dispose();
+	hexMesh = null;
+	console.log("disposed plane: ", plane);
+};
+
+const _removeEventListeners = () => {
+	document.removeEventListener(
+		"pointermove",
+		_onPointerMove
+	);
+	document.removeEventListener("touchmove", _onTouchMove);
+	document.removeEventListener(
+		"pointerdown",
+		_onPointerDown
+	);
+
+	window.removeEventListener("resize", () =>
+		_resizeRendererToDisplaySize()
+	);
 };
 
 onload = () => init();

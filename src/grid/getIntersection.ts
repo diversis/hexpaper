@@ -10,7 +10,7 @@ import {
   type Raycaster,
   type Vector2,
 } from "three";
-import { getLastIntersectionId, setLastIntersectionId } from "./hexGrid";
+import { getLastIntersectionId, setLastIntersectionId } from "./lastIntersection";
 
 interface Props {
   repeat?: boolean;

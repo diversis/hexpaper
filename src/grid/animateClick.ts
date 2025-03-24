@@ -13,6 +13,7 @@ import { getIntersection } from "./getIntersection";
 import { setRNGColor } from "./setRNGColor";
 import { setBaseColor } from "./setBaseColor";
 import { requestRenderIfNotRequested } from "./requestRender";
+import { init } from "./hexGrid";
 
 interface Props {
 	plane: InstancedMesh<
