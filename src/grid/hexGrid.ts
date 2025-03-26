@@ -45,6 +45,8 @@ import {
 	requestRenderIfNotRequested,
 	setRenderRequested,
 } from "./requestRender";
+import settings, { setupSettings } from "./settings";
+import setupWallpaperEngineListener from "./wallpaperEvents";
 
 let canvas: HTMLCanvasElement | HTMLElement | null = null;
 let camera: PerspectiveCamera | undefined;
@@ -80,8 +82,10 @@ const raycaster = new Raycaster();
 const mouse = new Vector2(1, 1);
 
 const fov = 80;
+let fpsMSLimit = 1000 / FPS_LIMIT;
 
 export function init() {
+	_removeEventListeners();
 	_clearScene();
 	camera = new PerspectiveCamera(
 		fov,
@@ -92,7 +96,7 @@ export function init() {
 
 	camera.position.set(0, 0, CAMERA_Z_DISTANCE);
 
-	canvas = document.getElementById("webgl-canvas");
+	canvas = document.querySelector("#webgl-canvas");
 
 	if (!canvas || canvas.tagName !== "CANVAS") return;
 
@@ -176,14 +180,14 @@ uniform sampler2D baseTexture;
 
 	requestRenderIfNotRequested();
 
-	_resetEventListeners();
-	canvas.style.opacity = "1";
+	_addEventListeners();
+	canvas.classList.replace("loading", "rendered");
 }
 
-const _resetEventListeners = () => {
-	_removeEventListeners();
-	_addEventListeners();
-};
+// const _resetEventListeners = () => {
+// 	_removeEventListeners();
+// 	_addEventListeners();
+// };
 
 const _addEventListeners = () => {
 	document.addEventListener(
@@ -195,10 +199,8 @@ const _addEventListeners = () => {
 		"pointerdown",
 		_onPointerDown
 	);
-
-	window.addEventListener("resize", () =>
-		_resizeRendererToDisplaySize()
-	);
+	const appContainer = document.querySelector("#app");
+	if (appContainer) resizeObserver.observe(appContainer);
 };
 
 //   Pointer Events
@@ -254,22 +256,23 @@ const _resizeRendererToDisplaySize = debounce(() => {
 		!finalComposer
 	)
 		return;
+	// init();
+	renderer.setSize(cWidth, cHeight, false);
 
-	console.log("needs resize");
-	init();
-	// renderer.setSize(cWidth, cHeight, false);
+	camera.aspect = cWidth / cHeight;
+	camera.updateProjectionMatrix();
 
-	// camera.aspect = cWidth / cHeight;
-	// camera.updateProjectionMatrix();
-
-	// renderer.setSize(cWidth, cHeight);
-	// bloomComposer.setSize(cWidth, cHeight);
-	// finalComposer.setSize(cWidth, cHeight);
-
-	// _disposeGrid();
-	// _addGrid();
-	// _disposeLights();
-	// _addLights();
+	renderer.setSize(cWidth, cHeight);
+	bloomComposer.setSize(cWidth, cHeight);
+	finalComposer.setSize(cWidth, cHeight);
+	plane?.removeFromParent();
+	lights.forEach((light) => light.removeFromParent());
+	_disposeGrid();
+	_addGrid();
+	_disposeLights();
+	_addLights();
+	console.log("scene:", scene?.children);
+	canvas.classList.replace("loading", "rendered");
 	requestRenderIfNotRequested();
 }, 200);
 
@@ -277,10 +280,15 @@ export function render() {
 	setRenderRequested(false);
 	if (!scene || !camera || !renderer) return;
 
-	if (_needsResize()) _resizeRendererToDisplaySize();
 	const now = performance.now();
 	const deltaTime = now - lastFrame;
-	const fpsMSLimit = 1000 / FPS_LIMIT;
+	const fpsLimit = settings.fps as unknown as number;
+
+	if (!fpsLimit || fpsLimit === 0) {
+		fpsMSLimit = 0;
+	} else {
+		fpsMSLimit = 1000 / fpsLimit;
+	}
 	if (deltaTime > fpsMSLimit) {
 		_renderWithEffects();
 		lastFrame = now;
@@ -288,32 +296,20 @@ export function render() {
 }
 
 // Resize events
-const _needsResize = () => {
-	if (
-		!renderer ||
-		!canvas ||
-		canvas.tagName !== "CANVAS" ||
-		!camera
-	)
-		return;
-	const width =
-		canvas.parentElement?.clientWidth ||
-		canvas.clientWidth;
-	const height =
-		canvas.parentElement?.clientHeight ||
-		canvas.clientHeight;
-	const dimensionsChanged =
-		width !== cWidth || height !== cHeight;
-	if (dimensionsChanged) {
-		cWidth = width;
-		cHeight = height;
-		canvas.classList.replace(
-			"opacity-100",
-			"opacity-0"
-		);
+
+const resizeObserver = new ResizeObserver((entries) => {
+	for (let entry of entries) {
+		if (entry.target.tagName === "MAIN") {
+			cHeight = entry.contentRect.height;
+			cWidth = entry.contentRect.width;
+			canvas?.classList.replace(
+				"rendered",
+				"loading"
+			);
+			_resizeRendererToDisplaySize();
+		}
 	}
-	return dimensionsChanged;
-};
+});
 
 function _renderWithEffects() {
 	if (!renderer || !bloomComposer || !finalComposer)
@@ -529,10 +525,11 @@ const _removeEventListeners = () => {
 		"pointerdown",
 		_onPointerDown
 	);
-
-	window.removeEventListener("resize", () =>
-		_resizeRendererToDisplaySize()
-	);
+	resizeObserver.disconnect();
 };
 
-onload = () => init();
+onload = () => {
+	init();
+	setupSettings();
+	setupWallpaperEngineListener();
+};

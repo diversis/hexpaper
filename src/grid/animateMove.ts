@@ -12,11 +12,9 @@ import {
 import { getIntersection } from "./getIntersection";
 import { setRNGColor } from "./setRNGColor";
 import { setBaseColor } from "./setBaseColor";
-import {
-	ANIMATION_SPEED,
-	TILE_HEIGHT,
-} from "../lib/constants/utils";
+
 import { requestRenderIfNotRequested } from "./requestRender";
+import settings from "./settings";
 
 interface Props {
 	plane: InstancedMesh<
@@ -61,14 +59,17 @@ export const animateMove = ({
 			if (!plane) return;
 			const { phaseDepth, phaseX, phaseY } =
 				plane.userData.phases[instanceId];
-			let t =
-				ANIMATION_SPEED * clock.getElapsedTime();
+
+			// @ts-ignore
+			let t = // @ts-ignore
+				settings.animationSpeed *
+				clock.getElapsedTime();
 
 			if (i < 4) {
 				tempCell.position.z =
 					Math.sin(phaseDepth + t) * 0.25;
-				tempCell.scale.z =
-					TILE_HEIGHT +
+				tempCell.scale.z = // @ts-ignore
+					settings.tileHeight +
 					Math.sin(phaseDepth + t) * 0.5;
 				tempCell.rotation.set(
 					0,
@@ -88,8 +89,8 @@ export const animateMove = ({
 				tempCell.position.z = Math.sin(
 					tempCell.position.z * (6 - i) * 0.025
 				);
-				tempCell.scale.z =
-					TILE_HEIGHT -
+				tempCell.scale.z = // @ts-ignore
+					settings.tileHeight -
 					Math.abs(
 						Math.sin(tempCell.scale.z * (6 - i))
 					);

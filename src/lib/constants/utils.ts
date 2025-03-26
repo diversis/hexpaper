@@ -29,4 +29,5 @@ export const SIZE = 1,
 	baseColor = new Color(BASE_COLOR),
 	ANIMATION_SPEED = 2,
 	TILE_OPACITY = 1,
-	TILE_HEIGHT = 0.4;
+	TILE_HEIGHT = 0.4,
+	FPS_LIMIT = 24;
