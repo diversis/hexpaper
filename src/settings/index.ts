@@ -6,15 +6,20 @@ import {
 	TILE_HEIGHT,
 	TILE_OPACITY,
 } from "../lib/constants/utils";
+import debounce from "../lib/utils/debounce";
+import { init, resetGrid } from "../grid/hexGrid";
 
 let settingsContainer: HTMLDivElement | null = null;
 
 const list = {
 	fps: { value: FPS_LIMIT, onChange: () => {} },
-	tileHeight: { value: TILE_HEIGHT, onChange: () => {} },
+	tileHeight: {
+		value: TILE_HEIGHT,
+		onChange: debounce(resetGrid, 200),
+	},
 	tileOpacity: {
 		value: TILE_OPACITY,
-		onChange: () => {},
+		onChange: debounce(resetGrid, 200),
 	},
 	animationSpeed: {
 		value: ANIMATION_SPEED,
@@ -22,9 +27,16 @@ const list = {
 	},
 	baseColor: {
 		value: BASE_COLOR,
-		onChange: () => {},
+		onChange: debounce(resetGrid, 200),
 	},
-	tileSize: { value: SIZE, onChange: () => {} },
+	tileSize: {
+		value: SIZE,
+		onChange: debounce(resetGrid, 200),
+	},
+	beatImpact: {
+		value: 0,
+		onChange: debounce(init, 200),
+	},
 };
 
 const settingsHandler = {

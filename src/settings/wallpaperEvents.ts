@@ -1,4 +1,11 @@
-import settings from "./settings";
+import { Color } from "three";
+import settings from ".";
+
+function wallpaperAudioListener(audioArray:number[]) {
+    // Handle audio input here
+}
+window.wallpaperRegisterAudioListener(wallpaperAudioListener);
+
 
 export default function setupWallpaperEngineListener() {
 	window.wallpaperPropertyListener = {
@@ -28,11 +35,9 @@ export default function setupWallpaperEngineListener() {
 				)
 					return;
 				//@ts-ignore
-				settings.baseColor =
-					"0x" +
-					_convertColor(
-						properties.basecolor.value
-					);
+				settings.baseColor = _getDarkBaseColor(
+					properties.basecolor.value
+				);
 			}
 			// Tile Size
 			if (properties.tilesize) {
@@ -71,15 +76,30 @@ export default function setupWallpaperEngineListener() {
 }
 
 const _convertColor = (wallpaperEngineColor: string) => {
-	const decColor = wallpaperEngineColor.split(" ");
-	const hexColor = (+decColor
-		.map((clr: unknown) => {
-			if (typeof clr === "string") {
-				const color = +clr;
-				if (color) return Math.ceil(color * 255);
-			}
-			return 0;
-		})
-		.join("")).toString(16);
-	return "0x" + hexColor;
+	const inputColor = wallpaperEngineColor.split(" ");
+	if (inputColor.length !== 3) return;
+	const inputRGB = new Color().setRGB(
+		+inputColor[0],
+		+inputColor[1],
+		+inputColor[2]
+	);
+	return inputRGB.getHex();
+};
+
+const _getDarkBaseColor = (
+	wallpaperEngineColor: string
+) => {
+	const inputColor = wallpaperEngineColor.split(" ");
+	if (inputColor.length !== 3) return;
+	const inputRGB = new Color().setRGB(
+		+inputColor[0],
+		+inputColor[1],
+		+inputColor[2]
+	);
+	let inputHSL = { h: 0, s: 0, l: 0 };
+	inputRGB.getHSL(inputHSL);
+	inputHSL.l *= 0.1;
+	return new Color()
+		.setHSL(inputHSL.h, inputHSL.s, inputHSL.l)
+		.getHex();
 };

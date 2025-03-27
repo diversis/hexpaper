@@ -14,7 +14,7 @@ import { setRNGColor } from "./setRNGColor";
 import { setBaseColor } from "./setBaseColor";
 
 import { requestRenderIfNotRequested } from "./requestRender";
-import settings from "./settings";
+import settings from "../settings";
 
 interface Props {
 	plane: InstancedMesh<
