@@ -2,6 +2,7 @@ import {
 	ANIMATION_SPEED,
 	BASE_COLOR,
 	BEAT_ANIMATION_SPEED,
+	BEAT_ENABLED,
 	BEAT_IMPACT,
 	FPS_LIMIT,
 	SIZE,
@@ -13,7 +14,11 @@ import { init, resetGrid } from "../grid/hexGrid";
 
 let settingsContainer: HTMLDivElement | null = null;
 
-const list = {
+type SettingsList = {
+	[key: string]: { value: any; onChange: () => void };
+};
+
+const list: SettingsList = {
 	fps: { value: FPS_LIMIT, onChange: () => {} },
 	tileHeight: {
 		value: TILE_HEIGHT,
@@ -35,6 +40,10 @@ const list = {
 		value: SIZE,
 		onChange: debounce(resetGrid, 200),
 	},
+	beatEnabled: {
+		value: BEAT_ENABLED,
+		onChange: debounce(init, 200),
+	},
 	beatImpact: {
 		value: BEAT_IMPACT,
 		onChange: debounce(init, 200),
@@ -45,34 +54,27 @@ const list = {
 	},
 };
 
-const settingsHandler = {
-	get(
-		target: typeof list,
-		prop: keyof typeof list
-	): number {
-		return target[prop].value;
-	},
-	set(
-		target: typeof list,
-		prop: keyof typeof list,
-		value: (typeof list)[keyof typeof list]["value"]
-	) {
-		target[prop].value = value;
-		target[prop].onChange();
-		refreshSettings();
-		return true;
-	},
+type Settings<T extends SettingsList> = {
+	[K in keyof T]: T[K]["value"];
 };
 
-type Settings={
-	[Property in keyof typeof list]:(typeof list)[keyof typeof list]["value"]
+function createProxy<T extends SettingsList>(
+	list: T
+): Settings<T> {
+	return new Proxy(list as any, {
+		get(target, prop) {
+			return target[prop].value;
+		},
+		set(target, prop, value) {
+			target[prop].value = value;
+			target[prop].onChange();
+			refreshSettings();
+			return true;
+		},
+	});
 }
 
-const settings = new Proxy<Settings>(
-	//@ts-ignore
-	list,
-	settingsHandler
-);
+const settings = createProxy(list);
 
 export default settings;
 export const setupSettings = () => {
