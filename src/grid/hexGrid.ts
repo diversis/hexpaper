@@ -36,8 +36,7 @@ import {
 	requestRenderIfNotRequested,
 	setRenderRequested,
 } from "./requestRender";
-import settings, { setupSettings } from "../settings";
-import setupWallpaperEngineListener from "../settings/wallpaperEvents";
+import settings from "../settings";
 import {
 	addLights,
 	disposeLights,
@@ -487,13 +486,8 @@ const _removeEventListeners = () => {
 	resizeObserver.disconnect();
 };
 
-export const resetGrid = () => {
+export function resetGrid() {
 	plane?.removeFromParent();
+	_disposeGrid();
 	_addGrid();
-};
-
-onload = () => {
-	init();
-	setupSettings();
-	setupWallpaperEngineListener();
-};
+}

@@ -1,11 +1,14 @@
 import { Color } from "three";
 import settings from ".";
+import { animateLightsOnBeat } from "../grid/lights";
 
-function wallpaperAudioListener(audioArray:number[]) {
-    // Handle audio input here
+function wallpaperAudioListener(audioArray: number[]) {
+	// Handle audio input here
+	animateLightsOnBeat(audioArray);
 }
-window.wallpaperRegisterAudioListener(wallpaperAudioListener);
-
+window.wallpaperRegisterAudioListener?.(
+	wallpaperAudioListener
+);
 
 export default function setupWallpaperEngineListener() {
 	window.wallpaperPropertyListener = {
@@ -71,20 +74,30 @@ export default function setupWallpaperEngineListener() {
 					settings.animationSpeed =
 						inputSpeed / 10;
 			}
+
+			// Beat impact
+			if (properties.beatimpact) {
+				const inputBeatImpact =
+					+properties.beatimpact.value;
+				if (inputBeatImpact && inputBeatImpact >= 0)
+					//@ts-ignore
+					settings.beatImpact =
+						inputBeatImpact / 10;
+			}
 		},
 	};
 }
 
-const _convertColor = (wallpaperEngineColor: string) => {
-	const inputColor = wallpaperEngineColor.split(" ");
-	if (inputColor.length !== 3) return;
-	const inputRGB = new Color().setRGB(
-		+inputColor[0],
-		+inputColor[1],
-		+inputColor[2]
-	);
-	return inputRGB.getHex();
-};
+// const _convertColor = (wallpaperEngineColor: string) => {
+// 	const inputColor = wallpaperEngineColor.split(" ");
+// 	if (inputColor.length !== 3) return;
+// 	const inputRGB = new Color().setRGB(
+// 		+inputColor[0],
+// 		+inputColor[1],
+// 		+inputColor[2]
+// 	);
+// 	return inputRGB.getHex();
+// };
 
 const _getDarkBaseColor = (
 	wallpaperEngineColor: string

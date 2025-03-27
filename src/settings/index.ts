@@ -1,6 +1,7 @@
 import {
 	ANIMATION_SPEED,
 	BASE_COLOR,
+	BEAT_IMPACT,
 	FPS_LIMIT,
 	SIZE,
 	TILE_HEIGHT,
@@ -34,7 +35,7 @@ const list = {
 		onChange: debounce(resetGrid, 200),
 	},
 	beatImpact: {
-		value: 0,
+		value: BEAT_IMPACT,
 		onChange: debounce(init, 200),
 	},
 };
