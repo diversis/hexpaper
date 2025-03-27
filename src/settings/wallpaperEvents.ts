@@ -82,7 +82,7 @@ export default function setupWallpaperEngineListener() {
 				if (inputBeatImpact && inputBeatImpact >= 0)
 					//@ts-ignore
 					settings.beatImpact =
-						inputBeatImpact / 10;
+						inputBeatImpact / 100;
 			}
 		},
 	};

@@ -51,7 +51,7 @@ export const animateClick = ({
 
 	const tick = () => {
 		if (!plane) return;
-		// console.log(i);
+
 		const { phaseDepth, phaseX, phaseY } =
 			plane.userData.phases[instanceId];
 
@@ -153,6 +153,8 @@ export const animateClick = ({
 
 			requestRenderIfNotRequested();
 			window.requestAnimationFrame(tick);
+		} else {
+			requestRenderIfNotRequested();
 		}
 	};
 	window.requestAnimationFrame(tick);

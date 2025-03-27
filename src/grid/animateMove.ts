@@ -141,6 +141,8 @@ export const animateMove = ({
 				i += 0.1 * t;
 				requestRenderIfNotRequested();
 				window.requestAnimationFrame(tick);
+			} else {
+				requestRenderIfNotRequested();
 			}
 		};
 

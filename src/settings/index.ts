@@ -84,6 +84,17 @@ export const refreshSettings = () => {
 		tab.appendChild(propValue);
 		settingsContainer?.appendChild(tab);
 	});
+
+	const audioContainer = document.createElement("div");
+	audioContainer.id = "audio-container";
+
+	const audioName = document.createElement("div");
+	audioName.innerText = "BEAT";
+
+	const audioTab = document.createElement("div");
+	audioTab.appendChild(audioName);
+	audioTab.appendChild(audioContainer);
+	settingsContainer.appendChild(audioTab);
 	// _setupFpsInput();
 };
 
