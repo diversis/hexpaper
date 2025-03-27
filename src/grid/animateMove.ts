@@ -9,6 +9,8 @@ import {
 	type Raycaster,
 	type Vector2,
 } from "three";
+import { Tween,Easing } from "@tweenjs/tween.js";
+
 import { getIntersection } from "./getIntersection";
 import { setRNGColor } from "./setRNGColor";
 import { setBaseColor } from "./setBaseColor";
