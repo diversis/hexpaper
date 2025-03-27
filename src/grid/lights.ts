@@ -199,8 +199,8 @@ export function animateLightsOnBeat(audioArray: number[]) {
 	}
 }
 
-const dummyArray = Array(128).fill(1);
-export function sendLoopBeat() {
-	animateLightsOnBeat(dummyArray);
-	setTimeout(() => sendLoopBeat(), 500);
-}
+// const dummyArray = Array(128).fill(1);
+// export function sendLoopBeat() {
+// 	animateLightsOnBeat(dummyArray);
+// 	setTimeout(() => sendLoopBeat(), 500);
+// }
