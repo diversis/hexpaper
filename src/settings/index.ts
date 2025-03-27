@@ -15,10 +15,13 @@ import { init, resetGrid } from "../grid/hexGrid";
 let settingsContainer: HTMLDivElement | null = null;
 
 type SettingsList = {
-	[key: string]: { value: any; onChange: () => void };
+	[key: string]: {
+		value: any;
+		onChange: () => void;
+	};
 };
 
-const list: SettingsList = {
+const list = {
 	fps: { value: FPS_LIMIT, onChange: () => {} },
 	tileHeight: {
 		value: TILE_HEIGHT,
@@ -55,17 +58,22 @@ const list: SettingsList = {
 };
 
 type Settings<T extends SettingsList> = {
-	[K in keyof T]: T[K]["value"];
+	[K in keyof T]: T[K] extends { value: infer V }
+		? V
+		: never;
 };
 
 function createProxy<T extends SettingsList>(
 	list: T
 ): Settings<T> {
 	return new Proxy(list as any, {
-		get(target, prop) {
-			return target[prop].value;
+		get(target, prop: string) {
+			if (prop in target) {
+				return target[prop].value;
+			}
+			return undefined;
 		},
-		set(target, prop, value) {
+		set(target, prop: string, value) {
 			target[prop].value = value;
 			target[prop].onChange();
 			refreshSettings();
