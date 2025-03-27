@@ -5,12 +5,17 @@ import {
 	Light,
 	Clock,
 } from "three";
-import { UNIT } from "../lib/constants/utils";
+import {
+	AMBIENT_LIGHT_INTENSITY,
+	DIRECT_LIGHT_INTENSITY,
+	DIRECT_TOP_LIGHT_INTENSITY,
+	UNIT,
+} from "../lib/constants/utils";
 import settings from "../settings";
 import { requestRenderIfNotRequested } from "./requestRender";
 
 let lights: Map<string, Light> = new Map();
-let audioContainer: Element | null;
+// let audioContainer: Element | null;
 
 export function addLights({
 	scene,
@@ -25,25 +30,28 @@ export function addLights({
 
 	// Lights
 
-	const ambiBeatImpact = // @ts-ignore
-		settings.beatImpact > 0.5 // @ts-ignore
-			? (settings.beatImpact as number) * 0.4
+	const ambiBeatImpact =
+		settings.beatImpact > 0.5
+			? (settings.beatImpact as number) *
+			  (AMBIENT_LIGHT_INTENSITY - 0.5)
 			: 0;
 	const ambiLight = new AmbientLight(
-		0xffffff, // @ts-ignore
-		settings.tileOpacity > 0 // @ts-ignore
-			? (0.9 - ambiBeatImpact) / settings.tileOpacity
+		0xffffff,
+		settings.tileOpacity > 0
+			? (AMBIENT_LIGHT_INTENSITY - ambiBeatImpact) /
+			  settings.tileOpacity
 			: 0
 	);
 	scene.add(ambiLight);
 	lights.set("ambient", ambiLight);
 
-	const directBeatImpact = // @ts-ignore
-		(settings.beatImpact as number) * 0.4;
+	const directBeatImpact =
+		(settings.beatImpact as number) *
+		DIRECT_LIGHT_INTENSITY;
 	const dirLight1 = new DirectionalLight(
-		0x33ffff, // @ts-ignore
+		0x33ffff,
 		settings.tileOpacity > 0
-			? (0.4 - directBeatImpact) / // @ts-ignore
+			? (DIRECT_LIGHT_INTENSITY - directBeatImpact) /
 			  settings.tileOpacity
 			: 0
 	);
@@ -53,9 +61,9 @@ export function addLights({
 	lights.set("left", dirLight1);
 
 	const dirLight2 = new DirectionalLight(
-		0xff33ff, // @ts-ignore
-		settings.tileOpacity > 0 // @ts-ignore
-			? (0.4 - directBeatImpact) / // @ts-ignore
+		0xff33ff,
+		settings.tileOpacity > 0
+			? (DIRECT_LIGHT_INTENSITY - directBeatImpact) /
 			  settings.tileOpacity
 			: 0
 	);
@@ -65,11 +73,11 @@ export function addLights({
 	lights.set("right", dirLight2);
 
 	const dirLight3 = new DirectionalLight(
-		0xeeeeee, // @ts-ignore
+		0xeeeeee,
 		settings.tileOpacity > 0
-			? (0.33 - // @ts-ignore
-					(settings.beatImpact as number) *
-						0.33) / // @ts-ignore
+			? (DIRECT_TOP_LIGHT_INTENSITY -
+					settings.beatImpact *
+						DIRECT_TOP_LIGHT_INTENSITY) /
 			  settings.tileOpacity
 			: 0
 	);
@@ -78,12 +86,12 @@ export function addLights({
 	scene.add(dirLight3);
 	lights.set("top", dirLight3);
 
-	audioContainer = document.querySelector(
-		"#audio-container"
-	);
-	if (audioContainer?.tagName === "DIV") {
-		audioContainer.innerHTML = "listening...";
-	}
+	// audioContainer = document.querySelector(
+	// 	"#audio-container"
+	// );
+	// if (audioContainer?.tagName === "DIV") {
+	// 	audioContainer.innerHTML = "listening...";
+	// }
 }
 
 export function removeLights() {
@@ -98,93 +106,111 @@ export function disposeLights() {
 }
 
 export function animateLightsOnBeat(audioArray: number[]) {
-	if (
-		lights.size == 0 || // @ts-ignore
-		settings.beatImpact == 0
-	)
+	if (lights.size == 0 || settings.beatImpact <= 0.05)
 		return;
 
 	// const maxImpact = { value: 0, time: performance.now() };
 	let clock = new Clock();
+	const leftMid = Math.min(
+		Math.max(...audioArray.slice(10, 40)),
+		1.0
+	);
+	const rightMid = Math.min(
+		Math.max(...audioArray.slice(74, 104)),
+		1.0
+	);
 	const leftBeat = Math.min(
-		Math.max(...audioArray.slice(0, 4)),
+		Math.max(...audioArray.slice(0, 1)),
 		1.0
 	);
 	const rightBeat = Math.min(
-		Math.max(...audioArray.slice(64, 68)),
+		Math.max(...audioArray.slice(64, 65)),
 		1.0
+	);
+	const snare = Math.min(
+		Math.max(
+			...audioArray.slice(9, 12),
+			...audioArray.slice(73, 76)
+		)
 	);
 	const maxBeat = Math.max(leftBeat, rightBeat);
-	if (audioContainer?.tagName === "DIV") {
-		audioContainer.innerHTML = "" + maxBeat;
-	}
+	// if (audioContainer?.tagName === "DIV") {
+	// 	audioContainer.innerHTML =
+	// 		"" +
+	// 		audioArray
+	// 			.slice(0, 2)
+	// 			.map((a) => a.toFixed(1))
+	// 			.join(";");
+	// }
 
-	const highFQ = Math.min(
-		Math.max(
-			...audioArray.slice(50, 64),
-			...audioArray.slice(114, 128)
-		),
-		1.0
-	);
+	// const highFQ = Math.min(
+	// 	Math.max(
+	// 		...audioArray.slice(50, 64),
+	// 		...audioArray.slice(114, 128)
+	// 	),
+	// 	1.0
+	// );
 	let i = 0;
 	const tick = () => {
 		let t = 10 * clock.getElapsedTime();
-		if (
-			lights.size == 0 || // @ts-ignore
-			settings.beatImpact == 0
-		)
+		if (lights.size == 0 || settings.beatImpact <= 0.05)
 			return;
 
 		const left = lights.get("left");
 		if (left) {
-			left.intensity = Math.max(
-				// @ts-ignore
-				0.4 * leftBeat - i * settings.beatImpact
+			left.intensity = _intensityOnTick(
+				DIRECT_LIGHT_INTENSITY,
+				i,
+				settings.beatImpact,
+				leftMid
 			);
+
 			left.position.setZ(
-				// @ts-ignore
-				leftBeat * i * settings.beatImpact
+				leftMid * i * settings.beatImpact
 			);
 		}
 		const right = lights.get("right");
 		if (right) {
-			right.intensity = Math.max(
-				// @ts-ignore
-				0.4 * rightBeat - i * settings.beatImpact
+			right.intensity = _intensityOnTick(
+				DIRECT_LIGHT_INTENSITY,
+				i,
+				settings.beatImpact,
+				rightMid
 			);
+
 			right.position.setZ(
-				// @ts-ignore
 				rightBeat * i * settings.beatImpact
 			);
 		}
 
-		const ambi = lights.get("ambient");
-		if (ambi) {
-			ambi.intensity = Math.max(
-				// @ts-ignore
-				0.9 * maxBeat -
-					i * // @ts-ignore
-						(settings.beatImpact > 0.5 // @ts-ignore
-							? (settings.beatImpact as number)
-							: 0)
-			);
+		if (settings.beatImpact > 0.5) {
+			const ambi = lights.get("ambient");
+			if (ambi) {
+				ambi.intensity = _intensityOnTick(
+					AMBIENT_LIGHT_INTENSITY,
+					i,
+					settings.beatImpact,
+					snare
+				);
+			}
 		}
-
 		const top = lights.get("top");
 		if (top) {
-			top.intensity = Math.max(
-				0.0, // @ts-ignore
-				0.33 * highFQ - i * settings.beatImpact
+			top.intensity = _intensityOnTick(
+				DIRECT_TOP_LIGHT_INTENSITY,
+				i,
+				settings.beatImpact,
+				maxBeat
 			);
 		}
 
 		if (i < 1) {
 			i +=
 				0.01 *
-				t * // @ts-ignore
-				(settings.animationSpeed === 0
+				t *
+				(settings.beatAnimationSpeed === 0
 					? 1
-					: settings.animationSpeed);
+					: settings.beatAnimationSpeed);
 
 			requestRenderIfNotRequested();
 			requestAnimationFrame(tick);
@@ -198,6 +224,19 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		requestAnimationFrame(tick);
 	}
 }
+
+const _intensityOnTick = (
+	base: number,
+	i: number,
+	beatImpact: number,
+	beat: number
+) => {
+	return Math.min(
+		base,
+		base * (1 - beatImpact) +
+			beatImpact * (1 - i) * beat
+	);
+};
 
 // const dummyArray = Array(128).fill(1);
 // export function sendLoopBeat() {

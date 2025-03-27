@@ -1,6 +1,7 @@
 import {
 	ANIMATION_SPEED,
 	BASE_COLOR,
+	BEAT_ANIMATION_SPEED,
 	BEAT_IMPACT,
 	FPS_LIMIT,
 	SIZE,
@@ -38,6 +39,10 @@ const list = {
 		value: BEAT_IMPACT,
 		onChange: debounce(init, 200),
 	},
+	beatAnimationSpeed: {
+		value: BEAT_ANIMATION_SPEED,
+		onChange: () => {},
+	},
 };
 
 const settingsHandler = {
@@ -59,7 +64,12 @@ const settingsHandler = {
 	},
 };
 
-const settings = new Proxy<typeof list>(
+type Settings={
+	[Property in keyof typeof list]:(typeof list)[keyof typeof list]["value"]
+}
+
+const settings = new Proxy<Settings>(
+	//@ts-ignore
 	list,
 	settingsHandler
 );

@@ -69,7 +69,6 @@ let dummy = new Object3D();
 const bloomLayer = new Layers();
 bloomLayer.set(BLOOM_SCENE);
 
-// @ts-ignore
 const cellColor = new Color(settings.baseColor);
 
 const raycaster = new Raycaster();
@@ -77,7 +76,7 @@ const mouse = new Vector2(1, 1);
 
 const fov = 80;
 
-let fpsMSLimit = // @ts-ignore
+let fpsMSLimit =
 	settings.fps === 0 ? 0 : 1000 / settings.fps;
 
 export function init() {
@@ -278,7 +277,7 @@ export function render() {
 
 	const now = performance.now();
 	const deltaTime = now - lastFrame;
-	const fpsLimit = settings.fps as unknown as number;
+	const fpsLimit = settings.fps;
 
 	if (!fpsLimit || fpsLimit === 0) {
 		fpsMSLimit = 0;
@@ -325,18 +324,17 @@ function _renderWithEffects() {
 const _addGrid = () => {
 	if (!scene || !camera) return;
 
-	hexGeometry = new CylinderGeometry( // @ts-ignore
-		settings.tileSize * 0.95, // @ts-ignore
-		settings.tileSize * 0.95, // @ts-ignore
+	hexGeometry = new CylinderGeometry(
+		settings.tileSize * 0.95,
+		settings.tileSize * 0.95,
 		settings.tileSize * settings.tileHeight,
 		6
 	);
 	hexGeometry.rotateX(Math.PI * 0.5);
 
 	hexMesh = new MeshPhysicalMaterial({
-		// @ts-ignore
 		color: settings.baseColor,
-		transparent: true, // @ts-ignore
+		transparent: true,
 		opacity: settings.tileOpacity,
 	});
 
@@ -345,7 +343,7 @@ const _addGrid = () => {
 			UNIT
 	);
 	const totalRows = Math.floor(
-		_visibleHeightAtZDepth(CAMERA_Z_DISTANCE, camera) / // @ts-ignore
+		_visibleHeightAtZDepth(CAMERA_Z_DISTANCE, camera) /
 			(settings.tileSize * 2)
 	);
 
@@ -365,7 +363,7 @@ const _addGrid = () => {
 	scene.add(plane);
 
 	centerX = UNIT * 0.5 * totalCols;
-	// @ts-ignore
+
 	centerY = settings.tileSize * 0.5 * (totalRows + 1);
 	camera.position.set(
 		centerX,
@@ -382,7 +380,7 @@ const _addGrid = () => {
 			let cVector;
 
 			let rVector = new Vector3(
-				0, // @ts-ignore
+				0,
 				settings.tileSize * 1.5 * r,
 				0
 			);

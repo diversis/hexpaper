@@ -1,6 +1,7 @@
 import { Color } from "three";
 import settings from ".";
 import { animateLightsOnBeat } from "../grid/lights";
+import { BASE_COLOR } from "../lib/constants/utils";
 
 function wallpaperAudioListener(audioArray: number[]) {
 	// Handle audio input here
@@ -14,7 +15,7 @@ export default function setupWallpaperEngineListener() {
 	window.wallpaperPropertyListener = {
 		// applyGeneralProperties: function (properties) {
 		// 	if (properties.fps) {
-		// 		//@ts-ignore
+		//
 		// 		settings.fps = properties.fps;
 		// 	}
 		// },
@@ -27,7 +28,6 @@ export default function setupWallpaperEngineListener() {
 					inputFps >= 0 &&
 					inputFps <= 240
 				)
-					//@ts-ignore
 					settings.fps = Math.floor(inputFps);
 			}
 			// Base Color
@@ -37,7 +37,7 @@ export default function setupWallpaperEngineListener() {
 					"string"
 				)
 					return;
-				//@ts-ignore
+
 				settings.baseColor = _getDarkBaseColor(
 					properties.basecolor.value
 				);
@@ -47,7 +47,6 @@ export default function setupWallpaperEngineListener() {
 				const inputSize =
 					+properties.tilesize.value;
 				if (inputSize)
-					//@ts-ignore
 					settings.tileSize = Math.abs(inputSize);
 			}
 
@@ -60,7 +59,6 @@ export default function setupWallpaperEngineListener() {
 					inputOpacity >= 0 &&
 					inputOpacity <= 100
 				)
-					//@ts-ignore
 					settings.tileOpacity =
 						Math.floor(inputOpacity) / 100;
 			}
@@ -70,9 +68,10 @@ export default function setupWallpaperEngineListener() {
 				const inputSpeed =
 					+properties.animationspeed.value;
 				if (inputSpeed && inputSpeed >= 0)
-					//@ts-ignore
-					settings.animationSpeed =
-						inputSpeed / 10;
+					settings.animationSpeed = Math.min(
+						inputSpeed / 10,
+						250.0
+					);
 			}
 
 			// Beat impact
@@ -80,9 +79,21 @@ export default function setupWallpaperEngineListener() {
 				const inputBeatImpact =
 					+properties.beatimpact.value;
 				if (inputBeatImpact && inputBeatImpact >= 0)
-					//@ts-ignore
-					settings.beatImpact =
-						inputBeatImpact / 100;
+					settings.beatImpact = Math.min(
+						inputBeatImpact / 100,
+						1.0
+					);
+			}
+
+			// Beat animaiton speed
+			if (properties.beatanimationspeed) {
+				const inputBeatSpeed =
+					+properties.beatanimationspeed.value;
+				if (inputBeatSpeed && inputBeatSpeed >= 0)
+					settings.beatAnimationSpeed = Math.min(
+						inputBeatSpeed / 10,
+						250.0
+					);
 			}
 		},
 	};
@@ -103,7 +114,7 @@ const _getDarkBaseColor = (
 	wallpaperEngineColor: string
 ) => {
 	const inputColor = wallpaperEngineColor.split(" ");
-	if (inputColor.length !== 3) return;
+	if (inputColor.length !== 3) return BASE_COLOR;
 	const inputRGB = new Color().setRGB(
 		+inputColor[0],
 		+inputColor[1],
