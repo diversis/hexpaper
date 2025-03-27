@@ -12,12 +12,8 @@ import {
 	CylinderGeometry,
 	ShaderMaterial,
 	Layers,
-	AmbientLight,
-	DirectionalLight,
 	MeshPhysicalMaterial,
-	Light,
 } from "three";
-import "three";
 import {
 	EffectComposer,
 	OutputPass,
@@ -28,14 +24,9 @@ import {
 
 import debounce from "../lib/utils/debounce";
 import {
-	BASE_COLOR,
 	BLOOM_PARAMS,
 	BLOOM_SCENE,
 	CAMERA_Z_DISTANCE,
-	FPS_LIMIT,
-	SIZE,
-	TILE_HEIGHT,
-	TILE_OPACITY,
 	UNIT,
 } from "../lib/constants/utils";
 import { addHexCell } from "./addHexCell";
@@ -45,8 +36,13 @@ import {
 	requestRenderIfNotRequested,
 	setRenderRequested,
 } from "./requestRender";
-import settings, { setupSettings } from "./settings";
-import setupWallpaperEngineListener from "./wallpaperEvents";
+import settings, { setupSettings } from "../settings";
+import setupWallpaperEngineListener from "../settings/wallpaperEvents";
+import {
+	addLights,
+	disposeLights,
+	removeLights,
+} from "./lights";
 
 let canvas: HTMLCanvasElement | HTMLElement | null = null;
 let camera: PerspectiveCamera | undefined;
@@ -71,18 +67,19 @@ let centerY = 0;
 
 let dummy = new Object3D();
 
-let lights: Light[] = [];
-
 const bloomLayer = new Layers();
 bloomLayer.set(BLOOM_SCENE);
 
-const cellColor = new Color(BASE_COLOR);
+// @ts-ignore
+const cellColor = new Color(settings.baseColor);
 
 const raycaster = new Raycaster();
 const mouse = new Vector2(1, 1);
 
 const fov = 80;
-let fpsMSLimit = 1000 / FPS_LIMIT;
+
+let fpsMSLimit = // @ts-ignore
+	settings.fps === 0 ? 0 : 1000 / settings.fps;
 
 export function init() {
 	_removeEventListeners();
@@ -121,7 +118,7 @@ export function init() {
 	// Objects
 
 	_addGrid();
-	_addLights();
+	addLights({ scene, centerX, centerY });
 
 	// POSTPROCESSING
 	finalComposer = new EffectComposer(renderer);
@@ -266,11 +263,11 @@ const _resizeRendererToDisplaySize = debounce(() => {
 	bloomComposer.setSize(cWidth, cHeight);
 	finalComposer.setSize(cWidth, cHeight);
 	plane?.removeFromParent();
-	lights.forEach((light) => light.removeFromParent());
+	removeLights();
 	_disposeGrid();
 	_addGrid();
-	_disposeLights();
-	_addLights();
+	disposeLights();
+	addLights({ scene, centerX, centerY });
 	console.log("scene:", scene?.children);
 	canvas.classList.replace("loading", "rendered");
 	requestRenderIfNotRequested();
@@ -329,18 +326,19 @@ function _renderWithEffects() {
 const _addGrid = () => {
 	if (!scene || !camera) return;
 
-	hexGeometry = new CylinderGeometry(
-		SIZE * 0.95,
-		SIZE * 0.95,
-		SIZE * TILE_HEIGHT,
+	hexGeometry = new CylinderGeometry( // @ts-ignore
+		settings.tileSize * 0.95, // @ts-ignore
+		settings.tileSize * 0.95, // @ts-ignore
+		settings.tileSize * settings.tileHeight,
 		6
 	);
 	hexGeometry.rotateX(Math.PI * 0.5);
 
 	hexMesh = new MeshPhysicalMaterial({
-		color: BASE_COLOR,
-		transparent: true,
-		opacity: TILE_OPACITY,
+		// @ts-ignore
+		color: settings.baseColor,
+		transparent: true, // @ts-ignore
+		opacity: settings.tileOpacity,
 	});
 
 	const totalCols = Math.floor(
@@ -348,8 +346,8 @@ const _addGrid = () => {
 			UNIT
 	);
 	const totalRows = Math.floor(
-		_visibleHeightAtZDepth(CAMERA_Z_DISTANCE, camera) /
-			(SIZE * 2)
+		_visibleHeightAtZDepth(CAMERA_Z_DISTANCE, camera) / // @ts-ignore
+			(settings.tileSize * 2)
 	);
 
 	let cellCount = totalRows * totalCols;
@@ -368,7 +366,8 @@ const _addGrid = () => {
 	scene.add(plane);
 
 	centerX = UNIT * 0.5 * totalCols;
-	centerY = SIZE * 0.5 * (totalRows + 1);
+	// @ts-ignore
+	centerY = settings.tileSize * 0.5 * (totalRows + 1);
 	camera.position.set(
 		centerX,
 		centerY,
@@ -382,7 +381,12 @@ const _addGrid = () => {
 		for (let c = 0; c < totalCols; c++) {
 			if (!plane) return;
 			let cVector;
-			let rVector = new Vector3(0, SIZE * 1.5 * r, 0);
+
+			let rVector = new Vector3(
+				0, // @ts-ignore
+				settings.tileSize * 1.5 * r,
+				0
+			);
 			if (r % 2 === 0) {
 				cVector = new Vector3(UNIT * c, 0, 0);
 			} else {
@@ -432,51 +436,13 @@ const _visibleHeightAtZDepth = (
 	return 2 * Math.tan(vFOV / 2) * Math.abs(depth);
 };
 
-const _addLights = () => {
-	if (!scene) return;
-	// Lights
-	const ambiLight = new AmbientLight(
-		0xffffff,
-		TILE_OPACITY > 0 ? 0.9 / TILE_OPACITY : 0
-	);
-	scene.add(ambiLight);
-	lights.push(ambiLight);
-
-	const dirLight1 = new DirectionalLight(
-		0x33ffff,
-		TILE_OPACITY > 0 ? 0.4 / TILE_OPACITY : 0
-	);
-	dirLight1.position.set(0, centerY * 2 + 100 * UNIT, 0);
-	dirLight1.lookAt(centerX, centerY, 0);
-	scene.add(dirLight1);
-	lights.push(dirLight1);
-
-	const dirLight2 = new DirectionalLight(
-		0xaa55ee,
-		TILE_OPACITY > 0 ? 0.4 / TILE_OPACITY : 0
-	);
-	dirLight2.position.set(-100 * UNIT, -100 * UNIT, 0);
-	dirLight2.lookAt(centerX, centerY, 0);
-	scene.add(dirLight2);
-	lights.push(dirLight2);
-
-	const dirLight3 = new DirectionalLight(
-		0xeeeeee,
-		TILE_OPACITY > 0 ? 0.3 / TILE_OPACITY : 0
-	);
-	dirLight3.position.set(0, 0, 100 * UNIT);
-	dirLight3.lookAt(centerX, centerY, 0);
-	scene.add(dirLight3);
-	lights.push(dirLight3);
-};
-
 // Disposal
 
 const _clearScene = () => {
 	if (scene) {
 		scene.clear();
 		_disposeGrid();
-		_disposeLights();
+		disposeLights();
 		_disposeRenderer();
 		console.log("cleared scene: ", scene?.children);
 	}
@@ -495,13 +461,6 @@ const _disposeRenderer = () => {
 	finalComposer = null;
 	renderer?.dispose();
 	renderer = undefined;
-};
-
-const _disposeLights = () => {
-	lights.forEach((light) => {
-		light?.dispose();
-	});
-	lights = [];
 };
 
 const _disposeGrid = () => {
@@ -526,6 +485,11 @@ const _removeEventListeners = () => {
 		_onPointerDown
 	);
 	resizeObserver.disconnect();
+};
+
+export const resetGrid = () => {
+	plane?.removeFromParent();
+	_addGrid();
 };
 
 onload = () => {
