@@ -287,6 +287,9 @@ export function render() {
 	if (deltaTime > fpsMSLimit) {
 		_renderWithEffects();
 		lastFrame = now;
+	} else {
+		setRenderRequested(true);
+		setTimeout(render, fpsLimit);
 	}
 }
 
