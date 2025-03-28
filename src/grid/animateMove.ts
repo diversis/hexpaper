@@ -65,12 +65,12 @@ export const animateMove = ({
 		plane.userData.phases[instanceId];
 
 	const introTime =
-		4 /
+		8 /
 		(settings.animationSpeed == 0
 			? 1
 			: settings.animationSpeed);
 	const outroTime =
-		2 /
+		12 /
 		(settings.animationSpeed == 0
 			? 1
 			: settings.animationSpeed);
@@ -281,7 +281,7 @@ export const animateMove = ({
 			}
 			requestRenderIfNotRequested();
 		}
-		tweenGroup.update(timestamp);
+		// tweenGroup.update(timestamp);
 	};
 	plane.userData.timers[instanceId] =
 		window.requestAnimationFrame(tick);
