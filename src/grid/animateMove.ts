@@ -1,6 +1,7 @@
 import {
 	BufferGeometry,
 	Clock,
+	Color,
 	InstancedMesh,
 	Material,
 	PerspectiveCamera,
@@ -9,14 +10,14 @@ import {
 	type Raycaster,
 	type Vector2,
 } from "three";
-import { Tween,Easing } from "@tweenjs/tween.js";
+import { Tween, Easing, Group } from "@tweenjs/tween.js";
 
 import { getIntersection } from "./getIntersection";
-import { setRNGColor } from "./setRNGColor";
-import { setBaseColor } from "./setBaseColor";
 
 import { requestRenderIfNotRequested } from "./requestRender";
 import settings from "../settings";
+import { updateCellMatrix } from "./updateCell";
+import { animateColor, getRNGColor } from "./animateColors";
 
 interface Props {
 	plane: InstancedMesh<
@@ -50,104 +51,238 @@ export const animateMove = ({
 	});
 
 	if (!tempCell || !instanceId) return;
-
-	if (tempCell.scale.z < 1.5) {
-		setRNGColor(plane, instanceId);
-
-		let i = 0;
-		let clock = new Clock();
-		let bloom = true;
-		const tick = () => {
-			if (!plane) return;
-			const { phaseDepth, phaseX, phaseY } =
-				plane.userData.phases[instanceId];
-
-			// @ts-ignore
-			let t = // @ts-ignore
-				settings.animationSpeed *
-				clock.getElapsedTime();
-
-			if (i < 4) {
-				tempCell.position.z =
-					Math.sin(phaseDepth + t) * 0.25;
-				tempCell.scale.z = // @ts-ignore
-					settings.tileHeight +
-					Math.sin(phaseDepth + t) * 0.5;
-				tempCell.rotation.set(
-					0,
-					Math.cos(
-						phaseX + t * Math.sign(phaseX)
-					) *
-						Math.PI *
-						0.00625,
-
-					Math.sin(
-						phaseY + t * Math.sign(phaseY)
-					) *
-						Math.PI *
-						0.05
-				);
-			} else {
-				tempCell.position.z = Math.sin(
-					tempCell.position.z * (6 - i) * 0.025
-				);
-				tempCell.scale.z = // @ts-ignore
-					settings.tileHeight -
-					Math.abs(
-						Math.sin(tempCell.scale.z * (6 - i))
-					);
-				tempCell.rotation.set(
-					0,
-					Math.cos(
-						0.5 * Math.PI -
-							0.1 *
-								t *
-								tempCell.rotation.x *
-								(6 - i) *
-								Math.sign(phaseX)
-					) *
-						Math.PI *
-						0.00625,
-
-					Math.sin(
-						0.1 *
-							t *
-							tempCell.rotation.y *
-							(6 - i)
-					) *
-						Math.PI *
-						0.05
-				);
-				if (i > 6) {
-					i = 6;
-				}
-				if (
-					bloom &&
-					i > 4 &&
-					!plane.userData.timers[instanceId]
-				) {
-					setBaseColor(plane, instanceId);
-					bloom = false;
-				}
-			}
-			if (i == 6) {
-				tempCell.position.z = 0;
-				tempCell.rotation.set(0, 0, 0);
-				tempCell.scale.set(1, 1, 1);
-				requestRenderIfNotRequested();
-			}
-			tempCell.updateMatrix();
-			plane.setMatrixAt(instanceId, tempCell.matrix);
-			plane.instanceMatrix.needsUpdate = true;
-			if (i < 6) {
-				i += 0.1 * t;
-				requestRenderIfNotRequested();
-				window.requestAnimationFrame(tick);
-			} else {
-				requestRenderIfNotRequested();
-			}
-		};
-
-		window.requestAnimationFrame(tick);
+	const prevID = plane.userData.timers[instanceId];
+	if (prevID) cancelAnimationFrame(prevID);
+	plane.userData.timers[instanceId] = null;
+	if (plane.userData.tweens) {
+		plane.userData.tweens[instanceId]?.stop();
+		plane.userData.tweens[instanceId] = null;
 	}
+
+	let clock = new Clock();
+
+	const { phaseDepth, phaseY, phaseZ } =
+		plane.userData.phases[instanceId];
+
+	const introTime =
+		4 /
+		(settings.animationSpeed == 0
+			? 1
+			: settings.animationSpeed);
+	const outroTime =
+		2 /
+		(settings.animationSpeed == 0
+			? 1
+			: settings.animationSpeed);
+	const totalTime = introTime + outroTime;
+
+	// Animate with tweenjs
+
+	const tweenMove = new Tween({
+		positionZ: tempCell.position.z,
+		scaleZ: tempCell.scale.z,
+		rotationX: tempCell.rotation.x,
+		rotationY: tempCell.rotation.y,
+		rotationZ: tempCell.rotation.z,
+	})
+		.to(
+			{
+				positionZ: phaseDepth * 0.0625,
+				scaleZ: 1 + phaseDepth * 0.0025,
+				rotationX: 0,
+				rotationY: phaseY * 0.03275,
+				rotationZ: phaseZ * 0.0625,
+			},
+			(1000 * introTime) /
+				(settings.animationSpeed == 0
+					? 1
+					: settings.animationSpeed)
+		)
+		.easing(Easing.Exponential.Out)
+		.onUpdate(
+			({
+				positionZ,
+				scaleZ,
+				rotationX,
+				rotationY,
+				rotationZ,
+			}) => {
+				updateCellMatrix(
+					tempCell,
+					{ z: positionZ },
+					{ z: scaleZ },
+					{
+						x: rotationX,
+						y: rotationY,
+						z: rotationZ,
+					},
+					plane,
+					instanceId
+				);
+			}
+		)
+		.onComplete(() => {
+			updateCellMatrix(
+				tempCell,
+				{ z: phaseDepth * 0.0625 },
+				{ z: 1 + phaseDepth * 0.0025 },
+				{
+					x: 0,
+					y: phaseY * 0.03275,
+					z: phaseZ * 0.0625,
+				},
+				plane,
+				instanceId
+			);
+		})
+		.onStop(() => {
+			if (settings.freezeHexOnActiveTouch) return;
+			updateCellMatrix(
+				tempCell,
+				{ z: 0 },
+				{ z: 1 },
+				{
+					x: 0,
+					y: 0,
+					z: 0,
+				},
+				plane,
+				instanceId
+			);
+		});
+	const tweenToInitial = new Tween({
+		positionZ: tempCell.position.z,
+		scaleZ: tempCell.scale.z,
+		rotationX: tempCell.rotation.x,
+		rotationY: tempCell.rotation.y,
+		rotationZ: tempCell.rotation.z,
+	})
+		.to(
+			{
+				positionZ: 0,
+				scaleZ: 1,
+				rotationX: 0,
+				rotationY: 0,
+				rotationZ: 0,
+			},
+			(1000 * outroTime) /
+				(settings.animationSpeed == 0
+					? 1
+					: settings.animationSpeed)
+		)
+		.easing(Easing.Sinusoidal.In)
+		.onUpdate(
+			({
+				positionZ,
+				scaleZ,
+				rotationX,
+				rotationY,
+				rotationZ,
+			}) => {
+				updateCellMatrix(
+					tempCell,
+					{ z: positionZ },
+					{ z: scaleZ },
+					{
+						x: rotationX,
+						y: rotationY,
+						z: rotationZ,
+					},
+					plane,
+					instanceId
+				);
+				updateCellMatrix(
+					tempCell,
+					{ z: positionZ },
+					{ z: scaleZ },
+					{
+						x: rotationX,
+						y: rotationY,
+						z: rotationZ,
+					},
+					plane,
+					instanceId
+				);
+			}
+		)
+		.onComplete(() => {
+			updateCellMatrix(
+				tempCell,
+				{ z: 0 },
+				{ z: 1 },
+				{
+					x: 0,
+					y: 0,
+					z: 0,
+				},
+				plane,
+				instanceId
+			);
+			plane.userData.tweens[instanceId] = null;
+		})
+		.onStop(() => {
+			updateCellMatrix(
+				tempCell,
+				{ z: 0 },
+				{ z: 1 },
+				{
+					x: 0,
+					y: 0,
+					z: 0,
+				},
+				plane,
+				instanceId
+			);
+		});
+	tweenMove.chain(tweenToInitial);
+	plane.userData.tweens[instanceId] = tweenMove;
+	tweenMove.start();
+	const tweenGroup = new Group(tweenMove, tweenToInitial);
+	let currentColor = new Color();
+	plane.getColorAt(instanceId, currentColor);
+	const colorRNG = getRNGColor();
+
+	const lerpToRNGColor = animateColor(
+		plane,
+		instanceId,
+		currentColor,
+		colorRNG
+	);
+
+	const lerpToBaseColor = animateColor(
+		plane,
+		instanceId,
+		colorRNG,
+		settings.baseThreeColor
+	);
+
+	const tick = (timestamp: number) => {
+		if (!plane) return;
+
+		let t =
+			settings.animationSpeed *
+			clock.getElapsedTime();
+
+		if (t <= introTime) {
+			lerpToRNGColor.update(t / introTime);
+		} else {
+			lerpToBaseColor.update(
+				(t - introTime) / outroTime
+			);
+		}
+
+		if (t < totalTime) {
+			requestRenderIfNotRequested();
+			window.requestAnimationFrame(tick);
+		} else {
+			if (plane.userData.tweens) {
+				plane.userData.tweens[instanceId]?.stop();
+				plane.userData.tweens[instanceId] = null;
+			}
+			requestRenderIfNotRequested();
+		}
+		tweenGroup.update(timestamp);
+	};
+	plane.userData.timers[instanceId] =
+		window.requestAnimationFrame(tick);
 };

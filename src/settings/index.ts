@@ -11,13 +11,14 @@ import {
 } from "../lib/constants/utils";
 import debounce from "../lib/utils/debounce";
 import { init, resetGrid } from "../grid/hexGrid";
+import { Color } from "three";
 
 let settingsContainer: HTMLDivElement | null = null;
 
 type SettingsList = {
 	[key: string]: {
 		value: any;
-		onChange: () => void;
+		onChange: (value?: any) => void;
 	};
 };
 
@@ -37,7 +38,12 @@ const list = {
 	},
 	baseColor: {
 		value: BASE_COLOR,
-		onChange: debounce(resetGrid, 200),
+		onChange: debounce((value: number) => {
+			resetGrid(),
+				(settings.baseThreeColor = new Color(
+					value
+				));
+		}, 200),
 	},
 	tileSize: {
 		value: SIZE,
@@ -53,6 +59,14 @@ const list = {
 	},
 	beatAnimationSpeed: {
 		value: BEAT_ANIMATION_SPEED,
+		onChange: () => {},
+	},
+	baseThreeColor: {
+		value: new Color(BASE_COLOR),
+		onChange: () => {},
+	},
+	freezeHexOnActiveTouch: {
+		value: false,
 		onChange: () => {},
 	},
 };

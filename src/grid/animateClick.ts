@@ -48,21 +48,22 @@ export const animateClick = ({
 	setRNGColor(plane, instanceId);
 	let i = 0;
 	let clock = new Clock();
+	const { phaseDepth, phaseX, phaseY } =
+		plane.userData.phases[instanceId];
+
+	const timer = setTimeout(() => {
+		setBaseColor(plane, instanceId);
+		plane.userData.timers[instanceId] = null;
+		if (!!plane.instanceColor)
+			plane.instanceColor.needsUpdate = true;
+		tempCell.updateMatrix();
+	}, 100);
 
 	const tick = () => {
 		if (!plane) return;
 
-		const { phaseDepth, phaseX, phaseY } =
-			plane.userData.phases[instanceId];
-
 		clearTimeout(plane.userData.timers?.[instanceId]);
-		const timer = setTimeout(() => {
-			setBaseColor(plane, instanceId);
-			plane.userData.timers[instanceId] = null;
-			if (!!plane.instanceColor)
-				plane.instanceColor.needsUpdate = true;
-			tempCell.updateMatrix();
-		}, 100);
+
 		plane.userData.timers[instanceId] = timer;
 
 		let t = 10 * clock.getElapsedTime();

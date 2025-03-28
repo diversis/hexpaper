@@ -359,6 +359,7 @@ const _addGrid = () => {
 	);
 	plane.userData.phases = [];
 	plane.userData.timers = [];
+	plane.userData.tweens = [];
 	plane.castShadow = true;
 	plane.receiveShadow = true;
 	plane.position.set(0, 0, 0);
