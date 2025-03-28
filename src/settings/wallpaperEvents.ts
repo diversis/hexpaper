@@ -5,7 +5,9 @@ import { BASE_COLOR } from "../lib/constants/utils";
 
 function wallpaperAudioListener(audioArray: number[]) {
 	// Handle audio input here
-	animateLightsOnBeat(audioArray);
+	if (settings.beatEnabled) {
+		animateLightsOnBeat(audioArray);
+	}
 }
 window.wallpaperRegisterAudioListener?.(
 	wallpaperAudioListener
@@ -72,6 +74,12 @@ export default function setupWallpaperEngineListener() {
 						inputSpeed / 10,
 						250.0
 					);
+			}
+
+			// Beat impact
+			if (properties.beatenabled) {
+				settings.beatEnabled =
+					!!properties.beatenabled.value;
 			}
 
 			// Beat impact

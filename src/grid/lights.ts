@@ -106,8 +106,7 @@ export function disposeLights() {
 }
 
 export function animateLightsOnBeat(audioArray: number[]) {
-	if (lights.size == 0 || settings.beatImpact <= 0.05)
-		return;
+	if (lights.size == 0 || !settings.beatEnabled) return;
 
 	// const maxImpact = { value: 0, time: performance.now() };
 	let clock = new Clock();
@@ -153,7 +152,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 	let i = 0;
 	const tick = () => {
 		let t = 10 * clock.getElapsedTime();
-		if (lights.size == 0 || settings.beatImpact <= 0.05)
+		if (lights.size == 0 || !settings.beatEnabled)
 			return;
 
 		const left = lights.get("left");
