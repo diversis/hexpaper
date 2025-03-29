@@ -47,7 +47,24 @@ export default function setupWallpaperEngineListener() {
 				const inputSize =
 					+properties.tilesize.value;
 				if (inputSize)
-					settings.tileSize = Math.abs(inputSize);
+					settings.tileSize = Math.max(
+						Math.min(inputSize, 2.0),
+						0.33
+					);
+			}
+
+			// Tile Width
+			if (properties.tilewidth) {
+				const inputWidth =
+					+properties.tilewidth.value;
+				if (inputWidth)
+					settings.tileWidth = Math.max(
+						Math.min(
+							Math.abs(inputWidth * 0.95),
+							1.0
+						),
+						0.5
+					);
 			}
 
 			// Tile Opacity

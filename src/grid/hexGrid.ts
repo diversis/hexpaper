@@ -327,8 +327,8 @@ const _addGrid = () => {
 	if (!scene || !camera) return;
 
 	hexGeometry = new CylinderGeometry(
-		settings.tileSize * 0.95,
-		settings.tileSize * 0.95,
+		settings.tileSize * settings.tileWidth,
+		settings.tileSize * settings.tileWidth,
 		settings.tileSize * settings.tileHeight,
 		6
 	);

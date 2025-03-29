@@ -5,6 +5,7 @@ import {
 	Light,
 	Clock,
 	MathUtils,
+	Vector3,
 } from "three";
 import {
 	AMBIENT_LIGHT_INTENSITY,
@@ -19,18 +20,17 @@ let lights: Map<
 	{
 		light: Light;
 		initialIntensity: number;
-		initialPosition?: {
-			x: number;
-			y: number;
-			z: number;
-		};
+		initialPosition?: Vector3;
 	}
 > = new Map();
+
 let prevMaxBeat = 0;
 let prevLeftMid = 0;
 let prevRightMid = 0;
 
-let audioContainer: Element | null;
+let zAmplitude = 0;
+// let audioContainer: Element | null;
+// let snareIndex = { b: 0, i: 0 };
 
 export function addLights({
 	scene,
@@ -42,7 +42,8 @@ export function addLights({
 	centerY: number;
 }) {
 	if (!scene || !settings.tileOpacity) return;
-
+	zAmplitude =
+		(settings.tileSize / 4) * settings.beatImpact;
 	const directBeatImpact = _getBeatImpact(
 		DIRECT_LIGHT_INTENSITY,
 		"direct"
@@ -84,17 +85,18 @@ export function addLights({
 		0x33ffff,
 		directInitialIntensity
 	);
-	dirLight1.position.set(-centerX * 0.5, centerY * 2, 0);
+	const dirLight1Position = new Vector3(
+		-centerX * 0.5,
+		centerY * 1.15,
+		-(settings.tileHeight + settings.tileSize) * 2
+	);
+	dirLight1.position.copy(dirLight1Position);
 	dirLight1.lookAt(centerX, centerY, 0);
 	scene.add(dirLight1);
 	lights.set("left", {
 		light: dirLight1,
 		initialIntensity: directInitialIntensity,
-		initialPosition: {
-			x: -centerX * 0.5,
-			y: centerY * 2,
-			z: 0,
-		},
+		initialPosition: dirLight1Position,
 	});
 
 	const dirLight2 = new DirectionalLight(
@@ -104,17 +106,18 @@ export function addLights({
 			directBeatImpact
 		)
 	);
-	dirLight2.position.set(centerX * 1.5, -centerY * 2, 0);
+	const dirLight2Position = new Vector3(
+		centerX * 0.5,
+		-centerY * 1.15,
+		-(settings.tileHeight + settings.tileSize) * 2
+	);
+	dirLight2.position.copy(dirLight2Position);
 	dirLight2.lookAt(centerX, centerY, 0);
 	scene.add(dirLight2);
 	lights.set("right", {
 		light: dirLight2,
 		initialIntensity: directInitialIntensity,
-		initialPosition: {
-			x: centerX * 1.5,
-			y: -centerY * 2,
-			z: 0,
-		},
+		initialPosition: dirLight2Position,
 	});
 
 	const topInitialIntensity = _getInitialLightIntensity(
@@ -128,24 +131,25 @@ export function addLights({
 			directBeatImpact
 		)
 	);
-	dirLight3.position.set(0, 0, 100 * settings.unit);
+	const dirLight3Position = new Vector3(
+		0,
+		0,
+		100 * settings.unit
+	);
+	dirLight3.position.copy(dirLight3Position);
 	dirLight3.lookAt(centerX, centerY, 0);
 	scene.add(dirLight3);
 	lights.set("top", {
 		light: dirLight3,
 		initialIntensity: topInitialIntensity,
-		initialPosition: {
-			x: 0,
-			y: 0,
-			z: 100 * settings.unit,
-		},
+		initialPosition: dirLight3Position,
 	});
-	audioContainer =
-		audioContainer ||
-		document.querySelector("#audio-container");
-	if (audioContainer?.tagName === "DIV") {
-		audioContainer.innerHTML = "listening...";
-	}
+	// audioContainer =
+	// 	audioContainer ||
+	// 	document.querySelector("#audio-container");
+	// if (audioContainer?.tagName === "DIV") {
+	// 	audioContainer.innerHTML = "listening...";
+	// }
 }
 
 export function removeLights() {
@@ -175,26 +179,33 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		1.0
 	);
 	const leftBeat = Math.min(
-		Math.max(...audioArray.slice(1, 3)),
+		Math.max(...audioArray.slice(0, 3)),
 		// audioArray[2],
 		1.0
 	);
 	const rightBeat = Math.min(
-		Math.max(...audioArray.slice(65, 67)),
+		Math.max(...audioArray.slice(64, 67)),
 		// audioArray[66],
 		1.0
 	);
-	// const snare = Math.min(
-	// 	Math.max(
-	// 		...audioArray.slice(9, 12),
-	// 		...audioArray.slice(73, 76)
-	// 	)
-	// );
+	const snare = Math.min(
+		Math.max(
+			...audioArray.slice(5, 10),
+			...audioArray.slice(69, 74)
+		)
+	);
 	const maxBeat = Math.max(leftBeat, rightBeat);
 
-	if (audioContainer?.tagName === "DIV") {
-		audioContainer.innerHTML = "" + maxBeat.toFixed(1);
-	}
+	// snareIndex = [...audioArray.slice(3, 20)].reduce(
+	// 	(acc, b, i) => {
+	// 		if (b > acc.b) return { b, i };
+	// 		return acc;
+	// 	},
+	// 	snareIndex
+	// );
+	// if (audioContainer?.tagName === "DIV") {
+	// 	audioContainer.innerHTML = `index: ${snareIndex.i}`;
+	// }
 
 	// const highFQ = Math.min(
 	// 	Math.max(
@@ -242,7 +253,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		leftLightPositionLerp = _positionLerp(
 			leftLight.light,
 			settings.beatImpact,
-			leftMid,
+			snare,
 			leftLight.initialPosition
 		);
 	}
@@ -265,7 +276,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		rightLightPositionLerp = _positionLerp(
 			rightLight.light,
 			settings.beatImpact,
-			rightMid,
+			snare,
 			rightLight.initialPosition
 		);
 	}
@@ -290,19 +301,18 @@ export function animateLightsOnBeat(audioArray: number[]) {
 			return;
 		}
 		const delta = t / beatAnimationTime;
+
 		if (settings.beatImpact > 0.5) {
 			ambientLightIntensityLerp?.update(delta);
 		}
+		// console.log(delta)
 		topLightLerp?.update(delta);
 		leftLightIntensityLerp?.update(delta);
 		rightLightIntensityLerp?.update(delta);
-		if (delta <= 0.2) {
-			const sideDelta = settings.beatImpact * 5;
 
-			leftLightPositionLerp?.update(sideDelta);
+		leftLightPositionLerp?.update(delta);
 
-			rightLightPositionLerp?.update(sideDelta);
-		}
+		rightLightPositionLerp?.update(delta);
 
 		if (t < beatAnimationTime) {
 			requestRenderIfNotRequested();
@@ -366,21 +376,36 @@ function _positionLerp(
 	light: Light,
 	beatImpact: number,
 	beat: number,
-	initialPosition?: { x: number; y: number; z: number }
+	initialPosition?: Vector3
 ) {
-	const amplitude = beatImpact * beat * 0.025;
+	if (!initialPosition) return;
+	const amplitude = Math.sin(beatImpact * beat * 0.5);
 	const oldPosition = light.position;
+	const zMax = initialPosition.z * zAmplitude;
+	let zPos =
+		oldPosition.z *
+		(1 - amplitude) *
+		(zAmplitude || 10);
+	if (Math.abs(zPos) > Math.abs(zMax)) {
+		zPos = zMax;
+	}
+	console.log(
+		`zPos: ${zPos} || initial*amp: ${
+			initialPosition.z * zAmplitude
+		}`
+	);
 	const newPosition = {
 		x:
 			oldPosition.x > 0
-				? oldPosition.x * (1 + amplitude)
-				: oldPosition.x * (1 - amplitude),
+				? oldPosition.x * (1 - amplitude)
+				: oldPosition.x * (1 + amplitude),
 		y:
 			oldPosition.y > 0
-				? oldPosition.y * (1 + amplitude)
-				: oldPosition.y * (1 - amplitude),
-		z: oldPosition.z,
+				? oldPosition.y * (1 - amplitude)
+				: oldPosition.y * (1 + amplitude),
+		z: zPos,
 	};
+
 	return {
 		update: (delta: number) => {
 			if (delta > 1) delta = 1;
@@ -388,11 +413,7 @@ function _positionLerp(
 				light.position.lerp(newPosition, delta * 5);
 			} else {
 				light.position.lerp(
-					{
-						x: initialPosition?.x || 0,
-						y: initialPosition?.y || 0,
-						z: initialPosition?.z || 0,
-					},
+					initialPosition || new Vector3(0, 0, 0),
 					(delta - 0.2) * 1.25
 				);
 			}
@@ -429,11 +450,12 @@ function _getBeatImpact(
 	return 0;
 }
 
-// const dummyArray = Array(128).fill(0);
-// dummyArray[2] = 1;
-// export function sendLoopBeat() {
-// 	dummyArray[30] = Math.random() * 0.5;
-// 	dummyArray[94] = Math.random() * 0.5;
-// 	animateLightsOnBeat(dummyArray);
-// 	setTimeout(() => sendLoopBeat(), 800);
-// }
+const dummyArray = Array(128).fill(0);
+dummyArray[2] = 1;
+export function sendLoopBeat() {
+	// dummyArray[30] = 0.5 + Math.random() * 0.5;
+	// dummyArray[6] = 0.5 + Math.random() * 0.5;
+	// dummyArray[95] = 0.5 + Math.random() * 0.5;
+	animateLightsOnBeat(dummyArray);
+	// setTimeout(() => sendLoopBeat(), 200);
+}

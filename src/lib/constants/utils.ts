@@ -1,23 +1,23 @@
-import { Color, Vector3 } from "three";
+import { Color } from "three";
 
 export const SIZE = 1,
 	CAMERA_Z_DISTANCE = 10,
 	UNIT = Math.sqrt(3) * SIZE,
-	ANGLE = Math.PI / 3,
-	RANGLE = Math.PI,
-	AXIS = new Vector3(0, 0, 1),
-	AXIS_VECTOR = new Vector3(0, -UNIT, 0),
-	AXIS_VECTOR_2 = new Vector3(0, SIZE, 0),
-	RIGHT_SIDE_VECTOR = new Vector3(
-		0,
-		SIZE,
-		0
-	).applyAxisAngle(AXIS, ANGLE),
-	LEFT_SIDE_VECTOR = new Vector3(
-		0,
-		SIZE,
-		0
-	).applyAxisAngle(AXIS, -ANGLE),
+	// ANGLE = Math.PI / 3,
+	// RANGLE = Math.PI,
+	// AXIS = new Vector3(0, 0, 1),
+	// AXIS_VECTOR = new Vector3(0, -UNIT, 0),
+	// AXIS_VECTOR_2 = new Vector3(0, SIZE, 0),
+	// RIGHT_SIDE_VECTOR = new Vector3(
+	// 	0,
+	// 	SIZE,
+	// 	0
+	// ).applyAxisAngle(AXIS, ANGLE),
+	// LEFT_SIDE_VECTOR = new Vector3(
+	// 	0,
+	// 	SIZE,
+	// 	0
+	// ).applyAxisAngle(AXIS, -ANGLE),
 	BLOOM_PARAMS = {
 		threshold: 0,
 		strength: 4,

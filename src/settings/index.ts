@@ -48,6 +48,13 @@ const list = {
 	},
 	tileSize: {
 		value: SIZE,
+		onChange: debounce(() => {
+			_refreshGridVectors();
+			resetGrid();
+		}, 200),
+	},
+	tileWidth: {
+		value: SIZE * 0.9,
 		onChange: debounce(resetGrid, 200),
 	},
 	beatEnabled: {
@@ -68,14 +75,50 @@ const list = {
 	},
 	unit: {
 		value: UNIT,
-		onChange: debounce(init, 200),
+		onChange: () => {},
 	},
+	// rightSideVector: {
+	// 	value: RIGHT_SIDE_VECTOR,
+	// 	onChange: () => {},
+	// },
+	// leftSideVector: {
+	// 	value: LEFT_SIDE_VECTOR,
+	// 	onChange: () => {},
+	// },
+	// axisVector: {
+	// 	value: AXIS_VECTOR,
+	// 	onChange: () => {},
+	// },
+	// axisVector2: {
+	// 	value: AXIS_VECTOR_2,
+	// 	onChange: () => {},
+	// },
 };
 
 type Settings<T extends SettingsList> = {
 	[K in keyof T]: T[K] extends { value: infer V }
 		? V
 		: never;
+};
+
+const _refreshGridVectors = () => {
+	settings.unit = Math.sqrt(3) * settings.tileSize;
+	// settings.axisVector = new Vector3(0, -settings.unit, 0);
+	// settings.axisVector2 = new Vector3(
+	// 	0,
+	// 	settings.tileSize,
+	// 	0
+	// );
+	// settings.rightSideVector = new Vector3(
+	// 	0,
+	// 	settings.tileSize,
+	// 	0
+	// ).applyAxisAngle(AXIS, ANGLE);
+	// settings.leftSideVector = new Vector3(
+	// 	0,
+	// 	settings.tileSize,
+	// 	0
+	// ).applyAxisAngle(AXIS, -ANGLE);
 };
 
 function createProxy<T extends SettingsList>(
@@ -131,28 +174,4 @@ export default settings;
 // 	audioTab.appendChild(audioContainer);
 // 	settingsContainer.appendChild(audioTab);
 // 	// _setupFpsInput();
-// };
-
-// const _setupFpsInput = () => {
-// 	const inputFps = document.createElement("input");
-// 	inputFps.id = "fpslimit";
-// 	inputFps.value = settings.fps;
-// 	const inputRow = document.createElement("div");
-// 	const changeFpsButton =
-// 		document.createElement("button");
-// 	changeFpsButton.onclick = _changeFPS;
-// 	changeFpsButton.innerText = "Apply";
-// 	inputRow.appendChild(inputFps);
-// 	inputRow.appendChild(changeFpsButton);
-// 	settingsContainer?.appendChild(inputRow);
-// };
-
-// const _changeFPS = () => {
-// 	const inputEl = document.querySelector(
-// 		"input#fpslimit"
-// 	) as HTMLInputElement | null;
-// 	console.log(inputEl && inputEl.tagName == "INPUT");
-// 	if (inputEl && inputEl.tagName == "INPUT") {
-// 		settings.fps = +inputEl.value;
-// 	}
 // };
