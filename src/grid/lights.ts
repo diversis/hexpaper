@@ -305,7 +305,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		if (settings.beatImpact > 0.5) {
 			ambientLightIntensityLerp?.update(delta);
 		}
-		// console.log(delta)
+
 		topLightLerp?.update(delta);
 		leftLightIntensityLerp?.update(delta);
 		rightLightIntensityLerp?.update(delta);
@@ -389,11 +389,7 @@ function _positionLerp(
 	if (Math.abs(zPos) > Math.abs(zMax)) {
 		zPos = zMax;
 	}
-	console.log(
-		`zPos: ${zPos} || initial*amp: ${
-			initialPosition.z * zAmplitude
-		}`
-	);
+
 	const newPosition = {
 		x:
 			oldPosition.x > 0

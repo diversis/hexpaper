@@ -19,11 +19,11 @@ export const updateCellMatrix = (
 	>,
 	instanceId: number
 ) => {
-	if (position.z && position.z > 1) {
-		console.log(
-			`updateCellMatrix: ${instanceId} ${position.z} ${scale.z}`
-		);
-	}
+	// if (position.z && position.z > 1) {
+	// 	console.log(
+	// 		`updateCellMatrix: ${instanceId} ${position.z} ${scale.z}`
+	// 	);
+	// }
 	tempCell.position.set(
 		position.x === 0
 			? 0
