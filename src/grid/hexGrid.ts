@@ -265,7 +265,7 @@ const _resizeRendererToDisplaySize = debounce(() => {
 	_addGrid();
 	disposeLights();
 	addLights({ scene, centerX, centerY });
-	console.log("scene:", scene?.children);
+	// console.log("scene:", scene?.children);
 	canvas.classList.replace("loading", "rendered");
 	requestRenderIfNotRequested();
 }, 200);
@@ -448,7 +448,7 @@ const _clearScene = () => {
 		_disposeGrid();
 		disposeLights();
 		_disposeRenderer();
-		console.log("cleared scene: ", scene?.children);
+		// console.log("cleared scene: ", scene?.children);
 	}
 };
 
@@ -475,7 +475,7 @@ const _disposeGrid = () => {
 	hexMesh?.map?.dispose();
 	hexMesh?.dispose();
 	hexMesh = null;
-	console.log("disposed plane: ", plane);
+	// console.log("disposed plane: ", plane);
 };
 
 const _removeEventListeners = () => {
