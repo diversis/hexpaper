@@ -8,12 +8,13 @@ import {
 	SIZE,
 	TILE_HEIGHT,
 	TILE_OPACITY,
+	UNIT,
 } from "../lib/constants/utils";
 import debounce from "../lib/utils/debounce";
 import { init, resetGrid } from "../grid/hexGrid";
 import { Color } from "three";
 
-let settingsContainer: HTMLDivElement | null = null;
+// let settingsContainer: HTMLDivElement | null = null;
 
 type SettingsList = {
 	[key: string]: {
@@ -65,9 +66,9 @@ const list = {
 		value: new Color(BASE_COLOR),
 		onChange: () => {},
 	},
-	freezeHexOnActiveTouch: {
-		value: false,
-		onChange: () => {},
+	unit: {
+		value: UNIT,
+		onChange: debounce(init, 200),
 	},
 };
 
@@ -90,7 +91,7 @@ function createProxy<T extends SettingsList>(
 		set(target, prop: string, value) {
 			target[prop].value = value;
 			target[prop].onChange();
-			refreshSettings();
+			// refreshSettings();
 			return true;
 		},
 	});
@@ -99,43 +100,42 @@ function createProxy<T extends SettingsList>(
 const settings = createProxy(list);
 
 export default settings;
-export const setupSettings = () => {
-	refreshSettings();
-};
+// export const setupSettings = () => {
+// 	refreshSettings();
+// };
 
-export const refreshSettings = () => {
-	settingsContainer =
-		document.querySelector("div#settings");
-	if (!settingsContainer) return;
-	settingsContainer.innerHTML = "";
-	Object.entries(settings).forEach(([key, value]) => {
-		const propName = document.createElement("div");
-		propName.innerText = key;
-		const propValue = document.createElement("div");
-		propValue.innerText = "" + value;
-		const tab = document.createElement("div");
-		tab.appendChild(propName);
-		tab.appendChild(propValue);
-		settingsContainer?.appendChild(tab);
-	});
+// export const refreshSettings = () => {
+// 	settingsContainer =
+// 		document.querySelector("div#settings");
+// 	if (!settingsContainer) return;
+// 	settingsContainer.innerHTML = "";
+// 	Object.entries(settings).forEach(([key, value]) => {
+// 		const propName = document.createElement("div");
+// 		propName.innerText = key;
+// 		const propValue = document.createElement("div");
+// 		propValue.innerText = "" + value;
+// 		const tab = document.createElement("div");
+// 		tab.appendChild(propName);
+// 		tab.appendChild(propValue);
+// 		settingsContainer?.appendChild(tab);
+// 	});
 
-	const audioContainer = document.createElement("div");
-	audioContainer.id = "audio-container";
+// 	const audioContainer = document.createElement("div");
+// 	audioContainer.id = "audio-container";
 
-	const audioName = document.createElement("div");
-	audioName.innerText = "BEAT";
+// 	const audioName = document.createElement("div");
+// 	audioName.innerText = "BEAT";
 
-	const audioTab = document.createElement("div");
-	audioTab.appendChild(audioName);
-	audioTab.appendChild(audioContainer);
-	settingsContainer.appendChild(audioTab);
-	// _setupFpsInput();
-};
+// 	const audioTab = document.createElement("div");
+// 	audioTab.appendChild(audioName);
+// 	audioTab.appendChild(audioContainer);
+// 	settingsContainer.appendChild(audioTab);
+// 	// _setupFpsInput();
+// };
 
 // const _setupFpsInput = () => {
 // 	const inputFps = document.createElement("input");
 // 	inputFps.id = "fpslimit";
-// 	//@ts-ignore
 // 	inputFps.value = settings.fps;
 // 	const inputRow = document.createElement("div");
 // 	const changeFpsButton =
@@ -153,7 +153,6 @@ export const refreshSettings = () => {
 // 	) as HTMLInputElement | null;
 // 	console.log(inputEl && inputEl.tagName == "INPUT");
 // 	if (inputEl && inputEl.tagName == "INPUT") {
-// 		//@ts-ignore
 // 		settings.fps = +inputEl.value;
 // 	}
 // };

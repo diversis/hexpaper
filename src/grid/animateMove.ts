@@ -18,6 +18,7 @@ import { requestRenderIfNotRequested } from "./requestRender";
 import settings from "../settings";
 import { updateCellMatrix } from "./updateCell";
 import { animateColor, getRNGColor } from "./animateColors";
+import { setBaseColor } from "./setBaseColor";
 
 interface Props {
 	plane: InstancedMesh<
@@ -64,16 +65,12 @@ export const animateMove = ({
 	const { phaseDepth, phaseY, phaseZ } =
 		plane.userData.phases[instanceId];
 
-	const introTime =
-		8 /
-		(settings.animationSpeed == 0
+	const animationSpeed =
+		settings.animationSpeed == 0
 			? 1
-			: settings.animationSpeed);
-	const outroTime =
-		12 /
-		(settings.animationSpeed == 0
-			? 1
-			: settings.animationSpeed);
+			: settings.animationSpeed;
+	const introTime = 8 / animationSpeed;
+	const outroTime = 12 / animationSpeed;
 	const totalTime = introTime + outroTime;
 
 	// Animate with tweenjs
@@ -93,10 +90,7 @@ export const animateMove = ({
 				rotationY: phaseY * 0.03275,
 				rotationZ: phaseZ * 0.0625,
 			},
-			(1000 * introTime) /
-				(settings.animationSpeed == 0
-					? 1
-					: settings.animationSpeed)
+			1000 * introTime
 		)
 		.easing(Easing.Exponential.Out)
 		.onUpdate(
@@ -136,7 +130,6 @@ export const animateMove = ({
 			);
 		})
 		.onStop(() => {
-			if (settings.freezeHexOnActiveTouch) return;
 			updateCellMatrix(
 				tempCell,
 				{ z: 0 },
@@ -165,10 +158,7 @@ export const animateMove = ({
 				rotationY: 0,
 				rotationZ: 0,
 			},
-			(1000 * outroTime) /
-				(settings.animationSpeed == 0
-					? 1
-					: settings.animationSpeed)
+			1000 * outroTime
 		)
 		.easing(Easing.Sinusoidal.In)
 		.onUpdate(
@@ -262,7 +252,7 @@ export const animateMove = ({
 		let t =
 			settings.animationSpeed *
 			clock.getElapsedTime();
-
+		// console.log("light tick: ", t);
 		if (t <= introTime) {
 			lerpToRNGColor.update(t / introTime);
 		} else {
@@ -279,9 +269,10 @@ export const animateMove = ({
 				plane.userData.tweens[instanceId]?.stop();
 				plane.userData.tweens[instanceId] = null;
 			}
+			setBaseColor(plane, instanceId);
 			requestRenderIfNotRequested();
 		}
-		// tweenGroup.update(timestamp);
+		tweenGroup.update(timestamp);
 	};
 	plane.userData.timers[instanceId] =
 		window.requestAnimationFrame(tick);

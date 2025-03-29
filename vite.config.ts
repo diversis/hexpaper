@@ -5,6 +5,7 @@ export default defineConfig({
 	build: {
 		// dont minify JS and CSS
 		// minify: false,
+		// target: ["chrome124"],
 		rollupOptions: {
 			output: {
 				// remove hashes from output paths

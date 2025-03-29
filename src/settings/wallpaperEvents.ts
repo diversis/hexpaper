@@ -5,9 +5,7 @@ import { BASE_COLOR } from "../lib/constants/utils";
 
 function wallpaperAudioListener(audioArray: number[]) {
 	// Handle audio input here
-	if (settings.beatEnabled) {
-		animateLightsOnBeat(audioArray);
-	}
+	animateLightsOnBeat(audioArray);
 }
 window.wallpaperRegisterAudioListener?.(
 	wallpaperAudioListener
@@ -76,7 +74,7 @@ export default function setupWallpaperEngineListener() {
 					);
 			}
 
-			// Beat impact
+			// Beat enabled
 			if (properties.beatenabled) {
 				settings.beatEnabled =
 					!!properties.beatenabled.value;
@@ -99,8 +97,8 @@ export default function setupWallpaperEngineListener() {
 					+properties.beatanimationspeed.value;
 				if (inputBeatSpeed && inputBeatSpeed >= 0)
 					settings.beatAnimationSpeed = Math.min(
-						inputBeatSpeed / 10,
-						250.0
+						inputBeatSpeed,
+						150.0
 					);
 			}
 		},

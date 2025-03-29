@@ -27,7 +27,6 @@ import {
 	BLOOM_PARAMS,
 	BLOOM_SCENE,
 	CAMERA_Z_DISTANCE,
-	UNIT,
 } from "../lib/constants/utils";
 import { addHexCell } from "./addHexCell";
 import { animateMove } from "./animateMove";
@@ -343,7 +342,7 @@ const _addGrid = () => {
 
 	const totalCols = Math.floor(
 		_visibleWidthAtZDepth(CAMERA_Z_DISTANCE, camera) /
-			UNIT
+			settings.unit
 	);
 	const totalRows = Math.floor(
 		_visibleHeightAtZDepth(CAMERA_Z_DISTANCE, camera) /
@@ -366,7 +365,7 @@ const _addGrid = () => {
 
 	scene.add(plane);
 
-	centerX = UNIT * 0.5 * totalCols;
+	centerX = settings.unit * 0.5 * totalCols;
 
 	centerY = settings.tileSize * 0.5 * (totalRows + 1);
 	camera.position.set(
@@ -389,10 +388,14 @@ const _addGrid = () => {
 				0
 			);
 			if (r % 2 === 0) {
-				cVector = new Vector3(UNIT * c, 0, 0);
+				cVector = new Vector3(
+					settings.unit * c,
+					0,
+					0
+				);
 			} else {
 				cVector = new Vector3(
-					UNIT * (c - 0.5),
+					settings.unit * (c - 0.5),
 					0,
 					0
 				);
