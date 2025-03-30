@@ -84,7 +84,6 @@ export const animateClick = ({
 		y: (phaseY * phaseDepth) / 2,
 		z: 0,
 	};
-	console.log(phaseX * phaseDepth);
 	const tweenMove = new Tween({
 		positionZ: tempCell.position.z,
 		scaleZ: tempCell.scale.z,
