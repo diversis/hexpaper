@@ -4,6 +4,7 @@ import {
 	BEAT_ANIMATION_SPEED,
 	BEAT_ENABLED,
 	BEAT_IMPACT,
+	DIRECT_LIGHT_INTENSITY,
 	FPS_LIMIT,
 	SIZE,
 	TILE_HEIGHT,
@@ -11,7 +12,11 @@ import {
 	UNIT,
 } from "../lib/constants/utils";
 import debounce from "../lib/utils/debounce";
-import { init, resetGrid } from "../grid/hexGrid";
+import {
+	init,
+	resetGrid,
+	resetLights,
+} from "../grid/hexGrid";
 import { Color } from "three";
 
 // let settingsContainer: HTMLDivElement | null = null;
@@ -76,6 +81,10 @@ const list = {
 	unit: {
 		value: UNIT,
 		onChange: () => {},
+	},
+	sideLightIntensity: {
+		value: DIRECT_LIGHT_INTENSITY,
+		onChange: debounce(resetLights, 200),
 	},
 	// rightSideVector: {
 	// 	value: RIGHT_SIDE_VECTOR,

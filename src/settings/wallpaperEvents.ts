@@ -94,6 +94,18 @@ export default function setupWallpaperEngineListener() {
 						Math.floor(inputOpacity) / 100;
 			}
 
+			// Side Light intensity
+			if (properties.sidelightintensity) {
+				const inputIntensity =
+					+properties.sidelightintensity.value /
+					10;
+				if (inputIntensity)
+					settings.sideLightIntensity = Math.max(
+						Math.min(inputIntensity, 3),
+						0
+					);
+			}
+
 			// Animation Speed
 			if (properties.animationspeed) {
 				const inputSpeed =

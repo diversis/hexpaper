@@ -504,4 +504,11 @@ export function resetGrid() {
 	_addGrid();
 }
 
+export function resetLights() {
+	removeLights();
+	disposeLights();
+	addLights({ scene, centerX, centerY });
+	requestRenderIfNotRequested();
+}
+
 export const getPointerDown = () => pointerDown;
