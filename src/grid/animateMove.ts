@@ -163,7 +163,7 @@ export const animateMove = ({
 			},
 			1000 * outroTime
 		)
-		.easing(Easing.Cubic.In)
+		.easing(Easing.Linear.Out)
 		.onUpdate(
 			({
 				positionZ,

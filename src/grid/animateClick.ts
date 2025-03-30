@@ -80,8 +80,8 @@ export const animateClick = ({
 	};
 	const finalScale = { z: 1 };
 	const finalRotation = {
-		x: (phaseX * phaseDepth) / 2,
-		y: (phaseY * phaseDepth) / 2,
+		x: Math.sign(phaseX) * 4,
+		y: Math.sign(phaseY) * 4,
 		z: 0,
 	};
 	const tweenMove = new Tween({
@@ -167,7 +167,7 @@ export const animateClick = ({
 			},
 			1000 * outroTime
 		)
-		.easing(Easing.Cubic.In)
+		.easing(Easing.Elastic.Out)
 		.onUpdate(
 			({
 				positionZ,

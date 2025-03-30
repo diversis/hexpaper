@@ -67,6 +67,20 @@ export default function setupWallpaperEngineListener() {
 					);
 			}
 
+			// Tile Height
+			if (properties.tileheight) {
+				const inputHeight =
+					+properties.tileheight.value;
+				if (inputHeight)
+					settings.tileHeight = Math.max(
+						Math.min(
+							Math.abs(inputHeight),
+							0.01
+						),
+						5
+					);
+			}
+
 			// Tile Opacity
 			if (properties.tileopacity) {
 				const inputOpacity =
