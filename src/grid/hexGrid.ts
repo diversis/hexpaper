@@ -65,6 +65,8 @@ let centerY = 0;
 
 let dummy = new Object3D();
 
+let pointerDown = false;
+
 const bloomLayer = new Layers();
 bloomLayer.set(BLOOM_SCENE);
 
@@ -193,6 +195,7 @@ const _addEventListeners = () => {
 		"pointerdown",
 		_onPointerDown
 	);
+	document.addEventListener("pointerup", _onPointerUp);
 	const appContainer = document.querySelector("#app");
 	if (appContainer) resizeObserver.observe(appContainer);
 };
@@ -202,7 +205,7 @@ function _onPointerDown(event: PointerEvent) {
 	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 	if (!plane || !camera || !scene) return;
-
+	pointerDown = true;
 	animateClick({
 		plane,
 		repeat: true,
@@ -210,6 +213,9 @@ function _onPointerDown(event: PointerEvent) {
 		raycaster,
 		mouse,
 	});
+}
+function _onPointerUp() {
+	pointerDown = false;
 }
 function _onPointerMove(event: PointerEvent) {
 	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -359,6 +365,7 @@ const _addGrid = () => {
 	plane.userData.phases = [];
 	plane.userData.timers = [];
 	plane.userData.tweens = [];
+	plane.userData.freeze = [];
 	plane.castShadow = true;
 	plane.receiveShadow = true;
 	plane.position.set(0, 0, 0);
@@ -496,3 +503,5 @@ export function resetGrid() {
 	_disposeGrid();
 	_addGrid();
 }
+
+export const getPointerDown = () => pointerDown;

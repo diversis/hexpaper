@@ -347,7 +347,7 @@ function _intensityLerp(
 	const newIntensity = Math.max(
 		initialIntensity || 0,
 		Math.min(
-			oldIntensity * (1 - beatImpact) +
+			(initialIntensity || 0) * (1 - beatImpact) +
 				beatImpact * beat,
 			maxIntesity || 1.0
 		)
@@ -380,25 +380,22 @@ function _positionLerp(
 ) {
 	if (!initialPosition) return;
 	const amplitude = Math.sin(beatImpact * beat * 0.5);
-	const oldPosition = light.position;
+	// const oldPosition = light.position;
 	const zMax = initialPosition.z * zAmplitude;
-	let zPos =
-		oldPosition.z *
-		(1 - amplitude) *
-		(zAmplitude || 10);
+	let zPos = zMax * (1 - amplitude) * (zAmplitude || 10);
 	if (Math.abs(zPos) > Math.abs(zMax)) {
 		zPos = zMax;
 	}
 
 	const newPosition = {
 		x:
-			oldPosition.x > 0
-				? oldPosition.x * (1 - amplitude)
-				: oldPosition.x * (1 + amplitude),
+			initialPosition.x > 0
+				? initialPosition.x * (1 - amplitude)
+				: initialPosition.x * (1 + amplitude),
 		y:
-			oldPosition.y > 0
-				? oldPosition.y * (1 - amplitude)
-				: oldPosition.y * (1 + amplitude),
+			initialPosition.y > 0
+				? initialPosition.y * (1 - amplitude)
+				: initialPosition.y * (1 + amplitude),
 		z: zPos,
 	};
 

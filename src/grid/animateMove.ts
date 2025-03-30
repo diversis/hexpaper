@@ -19,6 +19,7 @@ import settings from "../settings";
 import { updateCellMatrix } from "./updateCell";
 import { animateColor, getRNGColor } from "./animateColors";
 import { setBaseColor } from "./setBaseColor";
+import { getPointerDown } from "./hexGrid";
 
 interface Props {
 	plane: InstancedMesh<
@@ -41,7 +42,6 @@ export const animateMove = ({
 	raycaster,
 	mouse,
 }: Props) => {
-	// directLight.position.set(mouse.x, mouse.y, 5);
 	const { tempCell, instanceId } = getIntersection({
 		repeat,
 		lastIntersectionId,
@@ -59,7 +59,10 @@ export const animateMove = ({
 		plane.userData.tweens[instanceId]?.stop();
 		plane.userData.tweens[instanceId] = null;
 	}
-
+	if (getPointerDown()) {
+		plane.userData.freeze[instanceId] =
+			!plane.userData.freeze[instanceId];
+	}
 	let clock = new Clock();
 
 	const { phaseDepth, phaseY, phaseZ } =
@@ -160,7 +163,7 @@ export const animateMove = ({
 			},
 			1000 * outroTime
 		)
-		.easing(Easing.Sinusoidal.In)
+		.easing(Easing.Cubic.In)
 		.onUpdate(
 			({
 				positionZ,
@@ -255,7 +258,7 @@ export const animateMove = ({
 		// console.log("light tick: ", t);
 		if (t <= introTime) {
 			lerpToRNGColor.update(t / introTime);
-		} else {
+		} else if (!plane.userData.freeze[instanceId]) {
 			lerpToBaseColor.update(
 				(t - introTime) / outroTime
 			);
@@ -269,7 +272,9 @@ export const animateMove = ({
 				plane.userData.tweens[instanceId]?.stop();
 				plane.userData.tweens[instanceId] = null;
 			}
-			setBaseColor(plane, instanceId);
+			if (!plane.userData.freeze[instanceId]) {
+				setBaseColor(plane, instanceId);
+			}
 			requestRenderIfNotRequested();
 		}
 		tweenGroup.update(timestamp);
