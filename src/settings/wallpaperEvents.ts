@@ -70,14 +70,14 @@ export default function setupWallpaperEngineListener() {
 			// Tile Height
 			if (properties.tileheight) {
 				const inputHeight =
-					+properties.tileheight.value;
+					+properties.tileheight.value / 10;
 				if (inputHeight)
-					settings.tileHeight = Math.max(
-						Math.min(
+					settings.tileHeight = Math.min(
+						Math.max(
 							Math.abs(inputHeight),
 							0.01
 						),
-						5
+						2
 					);
 			}
 
