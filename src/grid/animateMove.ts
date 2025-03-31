@@ -17,7 +17,10 @@ import { getIntersection } from "./getIntersection";
 import { requestRenderIfNotRequested } from "./requestRender";
 import settings from "../settings";
 import { updateCellMatrix } from "./updateCell";
-import { animateColor, getRNGColor } from "./animateColors";
+import {
+	animateCellColor,
+	getRNGColor,
+} from "./animateColors";
 import { setBaseColor } from "./setBaseColor";
 import { getPointerDown } from "./hexGrid";
 
@@ -235,14 +238,14 @@ export const animateMove = ({
 	plane.getColorAt(instanceId, currentColor);
 	const colorRNG = getRNGColor();
 
-	const lerpToRNGColor = animateColor(
+	const lerpToRNGColor = animateCellColor(
 		plane,
 		instanceId,
 		currentColor,
 		colorRNG
 	);
 
-	const lerpToBaseColor = animateColor(
+	const lerpToBaseColor = animateCellColor(
 		plane,
 		instanceId,
 		colorRNG,

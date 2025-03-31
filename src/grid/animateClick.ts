@@ -17,7 +17,10 @@ import { getIntersection } from "./getIntersection";
 import { requestRenderIfNotRequested } from "./requestRender";
 import settings from "../settings";
 import { updateCellMatrix } from "./updateCell";
-import { animateColor, getRNGColor } from "./animateColors";
+import {
+	animateCellColor,
+	getRNGColor,
+} from "./animateColors";
 import { setBaseColor } from "./setBaseColor";
 
 interface Props {
@@ -49,7 +52,6 @@ export const animateClick = ({
 		raycaster,
 		mouse,
 	});
-
 	if (!tempCell || !instanceId) return;
 	const prevID = plane.userData.timers[instanceId];
 	if (prevID) cancelAnimationFrame(prevID);
@@ -239,14 +241,14 @@ export const animateClick = ({
 	plane.getColorAt(instanceId, currentColor);
 	const colorRNG = getRNGColor();
 
-	const lerpToRNGColor = animateColor(
+	const lerpToRNGColor = animateCellColor(
 		plane,
 		instanceId,
 		currentColor,
 		colorRNG
 	);
 
-	const lerpToBaseColor = animateColor(
+	const lerpToBaseColor = animateCellColor(
 		plane,
 		instanceId,
 		colorRNG,

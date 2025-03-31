@@ -6,6 +6,8 @@ import {
 	BEAT_IMPACT,
 	DIRECT_LIGHT_INTENSITY,
 	FPS_LIMIT,
+	LEFT_SIDE_LIGHT_COLOR,
+	RIGHT_SIDE_LIGHT_COLOR,
 	SIZE,
 	TILE_HEIGHT,
 	TILE_OPACITY,
@@ -18,6 +20,7 @@ import {
 	resetLights,
 } from "../grid/hexGrid";
 import { Color } from "three";
+import { setSideLightsColor } from "../grid/lights";
 
 // let settingsContainer: HTMLDivElement | null = null;
 
@@ -44,10 +47,10 @@ const list = {
 	},
 	baseColor: {
 		value: BASE_COLOR,
-		onChange: debounce((value: number) => {
+		onChange: debounce(() => {
 			resetGrid(),
 				(settings.baseThreeColor = new Color(
-					value
+					settings.baseColor
 				));
 		}, 200),
 	},
@@ -85,6 +88,28 @@ const list = {
 	sideLightIntensity: {
 		value: DIRECT_LIGHT_INTENSITY,
 		onChange: debounce(resetLights, 200),
+	},
+	leftSideLightColor: {
+		value: LEFT_SIDE_LIGHT_COLOR,
+		onChange: debounce(
+			() =>
+				setSideLightsColor(
+					settings.leftSideLightColor,
+					"left"
+				),
+			200
+		),
+	},
+	rightSideLightColor: {
+		value: RIGHT_SIDE_LIGHT_COLOR,
+		onChange: debounce(
+			() =>
+				setSideLightsColor(
+					settings.rightSideLightColor,
+					"right"
+				),
+			200
+		),
 	},
 	// rightSideVector: {
 	// 	value: RIGHT_SIDE_VECTOR,

@@ -23,12 +23,11 @@ export default function setupWallpaperEngineListener() {
 			// FPS limit
 			if (properties.fps) {
 				const inputFps = +properties.fps.value;
-				if (
-					inputFps &&
-					inputFps >= 0 &&
-					inputFps <= 240
-				)
-					settings.fps = Math.floor(inputFps);
+				if (inputFps)
+					settings.fps = Math.max(
+						Math.min(Math.floor(inputFps), 240),
+						0
+					);
 			}
 			// Base Color
 			if (properties.basecolor) {
@@ -85,13 +84,14 @@ export default function setupWallpaperEngineListener() {
 			if (properties.tileopacity) {
 				const inputOpacity =
 					+properties.tileopacity.value;
-				if (
-					inputOpacity &&
-					inputOpacity >= 0 &&
-					inputOpacity <= 100
-				)
-					settings.tileOpacity =
-						Math.floor(inputOpacity) / 100;
+				if (inputOpacity)
+					settings.tileOpacity = Math.max(
+						Math.min(
+							Math.floor(inputOpacity) / 100,
+							1.0
+						),
+						0.0
+					);
 			}
 
 			// Side Light intensity
@@ -106,14 +106,40 @@ export default function setupWallpaperEngineListener() {
 					);
 			}
 
+			// Left Side Light color
+			if (properties.leftsidelightcolor) {
+				if (
+					typeof properties.leftsidelightcolor
+						.value !== "string"
+				)
+					return;
+
+				settings.leftSideLightColor = _convertColor(
+					properties.leftsidelightcolor.value
+				);
+			}
+			// Right Side Light color
+			if (properties.rightsidelightcolor) {
+				if (
+					typeof properties.rightsidelightcolor
+						.value !== "string"
+				)
+					return;
+
+				settings.rightSideLightColor =
+					_convertColor(
+						properties.rightsidelightcolor.value
+					);
+			}
+
 			// Animation Speed
 			if (properties.animationspeed) {
 				const inputSpeed =
 					+properties.animationspeed.value;
-				if (inputSpeed && inputSpeed >= 0)
-					settings.animationSpeed = Math.min(
-						inputSpeed / 10,
-						250.0
+				if (inputSpeed)
+					settings.animationSpeed = Math.max(
+						Math.min(inputSpeed / 10, 250.0),
+						0.0
 					);
 			}
 
@@ -127,10 +153,13 @@ export default function setupWallpaperEngineListener() {
 			if (properties.beatimpact) {
 				const inputBeatImpact =
 					+properties.beatimpact.value;
-				if (inputBeatImpact && inputBeatImpact >= 0)
-					settings.beatImpact = Math.min(
-						inputBeatImpact / 100,
-						1.0
+				if (inputBeatImpact)
+					settings.beatImpact = Math.max(
+						Math.min(
+							inputBeatImpact / 100,
+							1.0
+						),
+						0.0
 					);
 			}
 
@@ -138,26 +167,26 @@ export default function setupWallpaperEngineListener() {
 			if (properties.beatanimationspeed) {
 				const inputBeatSpeed =
 					+properties.beatanimationspeed.value;
-				if (inputBeatSpeed && inputBeatSpeed >= 0)
-					settings.beatAnimationSpeed = Math.min(
-						inputBeatSpeed,
-						150.0
+				if (inputBeatSpeed)
+					settings.beatAnimationSpeed = Math.max(
+						Math.min(inputBeatSpeed, 150.0),
+						0.0
 					);
 			}
 		},
 	};
 }
 
-// const _convertColor = (wallpaperEngineColor: string) => {
-// 	const inputColor = wallpaperEngineColor.split(" ");
-// 	if (inputColor.length !== 3) return;
-// 	const inputRGB = new Color().setRGB(
-// 		+inputColor[0],
-// 		+inputColor[1],
-// 		+inputColor[2]
-// 	);
-// 	return inputRGB.getHex();
-// };
+const _convertColor = (wallpaperEngineColor: string) => {
+	const inputColor = wallpaperEngineColor.split(" ");
+	if (inputColor.length !== 3) return new Color(0x000000);
+	const inputRGB = new Color().setRGB(
+		+inputColor[0],
+		+inputColor[1],
+		+inputColor[2]
+	);
+	return inputRGB;
+};
 
 const _getDarkBaseColor = (
 	wallpaperEngineColor: string

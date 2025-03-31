@@ -5,9 +5,25 @@ import {
 	Color,
 	type InstancedMeshEventMap,
 	type NormalBufferAttributes,
+	Light,
 } from "three";
 
-export function animateColor(
+export function animateLightColor(light: Light, to: Color) {
+	return {
+		update: (delta: number) => {
+			light.color.lerp(to, delta);
+		},
+	};
+}
+
+export const getRNGColor = () =>
+	new Color().setHSL(
+		Math.random() * 0.3 + 0.5,
+		0.95,
+		Math.random() * 0.3 + 0.65
+	);
+
+export function animateCellColor(
 	plane: InstancedMesh<
 		BufferGeometry<NormalBufferAttributes>,
 		Material | Material[],
@@ -29,10 +45,3 @@ export function animateColor(
 		},
 	};
 }
-
-export const getRNGColor = () =>
-	new Color().setHSL(
-		Math.random() * 0.3 + 0.5,
-		0.95,
-		Math.random() * 0.3 + 0.65
-	);

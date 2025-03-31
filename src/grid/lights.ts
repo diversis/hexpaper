@@ -6,6 +6,7 @@ import {
 	Clock,
 	MathUtils,
 	Vector3,
+	Color,
 } from "three";
 import {
 	AMBIENT_LIGHT_INTENSITY,
@@ -14,6 +15,7 @@ import {
 } from "../lib/constants/utils";
 import settings from "../settings";
 import { requestRenderIfNotRequested } from "./requestRender";
+import { animateLightColor } from "./animateColors";
 
 let lights: Map<
 	string,
@@ -32,6 +34,16 @@ let prevSnare = 0;
 let zAmplitude = 0;
 // let audioContainer: Element | null;
 // let snareIndex = { b: 0, i: 0 };
+const impacts = new Map([
+	[
+		"ambient",
+		() =>
+			settings.beatImpact > 0.3
+				? settings.beatImpact * 0.9
+				: 0,
+	],
+	["direct", () => settings.beatImpact * 0.75],
+]);
 
 export function addLights({
 	scene,
@@ -45,20 +57,11 @@ export function addLights({
 	if (!scene || !settings.tileOpacity) return;
 	zAmplitude =
 		(settings.tileSize / 4) * settings.beatImpact;
-	const directBeatImpact = _getBeatImpact(
-		settings.sideLightIntensity,
-		"direct"
-	);
+	const directBeatImpact = _getBeatImpact("direct");
 
-	const directTopBeatImpact = _getBeatImpact(
-		DIRECT_TOP_LIGHT_INTENSITY,
-		"direct"
-	);
+	const directTopBeatImpact = _getBeatImpact("direct");
 
-	const ambientBeatImpact = _getBeatImpact(
-		AMBIENT_LIGHT_INTENSITY,
-		"ambient"
-	);
+	const ambientBeatImpact = _getBeatImpact("ambient");
 
 	// Lights
 	const ambientInitialIntensity =
@@ -83,7 +86,7 @@ export function addLights({
 		);
 
 	const dirLight1 = new DirectionalLight(
-		0x33ffff,
+		settings.leftSideLightColor,
 		directInitialIntensity
 	);
 	const dirLight1Position = new Vector3(
@@ -104,7 +107,7 @@ export function addLights({
 	});
 
 	const dirLight2 = new DirectionalLight(
-		0xff33ff,
+		settings.rightSideLightColor,
 		_getInitialLightIntensity(
 			settings.sideLightIntensity,
 			directBeatImpact
@@ -157,19 +160,6 @@ export function addLights({
 	// if (audioContainer?.tagName === "DIV") {
 	// 	audioContainer.innerHTML = "listening...";
 	// }
-}
-
-export function removeLights() {
-	lights.forEach((item) =>
-		item?.light.removeFromParent()
-	);
-}
-
-export function disposeLights() {
-	lights.forEach((item) => {
-		item?.light?.dispose();
-	});
-	lights = new Map();
 }
 
 export function animateLightsOnBeat(audioArray: number[]) {
@@ -238,7 +228,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		| { update: (delta: number) => void }
 		| undefined;
 	if (ambientLight) {
-		ambientLightIntensityLerp = _intensityLerp(
+		ambientLightIntensityLerp = _intensityLerpOnBeat(
 			ambientLight.light,
 			settings.beatImpact,
 			maxBeat,
@@ -255,14 +245,14 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		| { update: (delta: number) => void }
 		| undefined;
 	if (leftLight) {
-		leftLightIntensityLerp = _intensityLerp(
+		leftLightIntensityLerp = _intensityLerpOnBeat(
 			leftLight.light,
 			settings.beatImpact,
 			snare,
 			leftLight.initialIntensity,
 			settings.sideLightIntensity
 		);
-		leftLightPositionLerp = _positionLerp(
+		leftLightPositionLerp = _positionLerpOnBeat(
 			leftLight.light,
 			settings.beatImpact,
 			leftMid,
@@ -278,14 +268,14 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		| { update: (delta: number) => void }
 		| undefined;
 	if (rightLight) {
-		rightLightIntensityLerp = _intensityLerp(
+		rightLightIntensityLerp = _intensityLerpOnBeat(
 			rightLight.light,
 			settings.beatImpact,
 			snare,
 			rightLight.initialIntensity,
 			settings.sideLightIntensity
 		);
-		rightLightPositionLerp = _positionLerp(
+		rightLightPositionLerp = _positionLerpOnBeat(
 			rightLight.light,
 			settings.beatImpact,
 			rightMid,
@@ -299,7 +289,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		| undefined;
 
 	if (topLight) {
-		topLightLerp = _intensityLerp(
+		topLightLerp = _intensityLerpOnBeat(
 			topLight.light,
 			settings.beatImpact,
 			maxBeat,
@@ -349,7 +339,23 @@ export function animateLightsOnBeat(audioArray: number[]) {
 	}
 }
 
-function _intensityLerp(
+// function _intensityLerp(
+// 	light: Light,
+// 	from: number,
+// 	to: number
+// ) {
+// 	return {
+// 		update: (delta: number) => {
+// 			light.intensity = MathUtils.lerp(
+// 				from,
+// 				to,
+// 				delta
+// 			);
+// 		},
+// 	};
+// }
+
+function _intensityLerpOnBeat(
 	light: Light,
 	beatImpact: number,
 	beat: number,
@@ -387,7 +393,7 @@ function _intensityLerp(
 	};
 }
 
-function _positionLerp(
+function _positionLerpOnBeat(
 	light: Light,
 	beatImpact: number,
 	beat: number,
@@ -441,23 +447,97 @@ export function _getInitialLightIntensity(
 				: baseIntensity) / settings.tileOpacity
 		: 1;
 }
-function _getBeatImpact(
-	baseIntensity: number,
-	lightType: string
-) {
-	const impacts = new Map([
-		[
-			"ambient",
-			settings.beatImpact > 0.3
-				? settings.beatImpact *
-				  (baseIntensity - 0.3)
-				: 0,
-		],
-		["direct", settings.beatImpact * baseIntensity],
-	]);
-	if (impacts.has(lightType))
-		return impacts.get(lightType) || 0;
+function _getBeatImpact(lightType: string) {
+	if (impacts.has(lightType)) {
+		return impacts.get(lightType)?.() || 0;
+	}
 	return 0;
+}
+
+export function setSideLightsColor(
+	color: Color,
+	side: "left" | "right"
+) {
+	if (lights.size < 1) return;
+	let clock = new Clock();
+	const animationSpeed =
+		settings.animationSpeed === 0
+			? 1
+			: settings.animationSpeed;
+	const animationTime = 1000 / animationSpeed;
+	let rightLight:
+		| {
+				light: Light;
+				initialIntensity: number;
+				initialPosition?: Vector3;
+		  }
+		| undefined;
+	if (side == "right") {
+		rightLight = lights.get("right");
+	}
+	let rightLightColorLerp: {
+		update: (delta: number) => void;
+	} | null;
+	if (rightLight) {
+		rightLightColorLerp = animateLightColor(
+			rightLight.light,
+			color
+		);
+	}
+
+	let leftLight:
+		| {
+				light: Light;
+				initialIntensity: number;
+				initialPosition?: Vector3;
+		  }
+		| undefined;
+
+	if (side == "left") {
+		leftLight = lights.get("left");
+	}
+	let leftLightColorLerp: {
+		update: (delta: number) => void;
+	} | null;
+	if (leftLight) {
+		leftLightColorLerp = animateLightColor(
+			leftLight.light,
+			color
+		);
+	}
+
+	const tick = () => {
+		let t = animationSpeed * clock.getElapsedTime();
+		if (lights.size == 0) {
+			return;
+		}
+		const delta = t / animationTime;
+
+		leftLightColorLerp?.update(delta);
+		rightLightColorLerp?.update(delta);
+
+		if (t < animationTime) {
+			requestRenderIfNotRequested();
+			requestAnimationFrame(tick);
+		} else {
+			requestRenderIfNotRequested();
+		}
+	};
+	requestAnimationFrame(tick);
+}
+
+// Disposal
+export function removeLights() {
+	lights.forEach((item) =>
+		item?.light.removeFromParent()
+	);
+}
+
+export function disposeLights() {
+	lights.forEach((item) => {
+		item?.light?.dispose();
+	});
+	lights = new Map();
 }
 
 // const dummyArray = Array(128).fill(0);
