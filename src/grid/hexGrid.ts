@@ -294,7 +294,7 @@ export function render() {
 		lastFrame = now;
 	} else {
 		setRenderRequested(true);
-		setTimeout(render, fpsMSLimit);
+		setTimeout(render, fpsMSLimit - deltaTime);
 	}
 }
 
