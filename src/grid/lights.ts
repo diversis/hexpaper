@@ -32,6 +32,8 @@ let prevRightMid = 0;
 let prevSnare = 0;
 
 let zAmplitude = 0;
+
+let animationID: number | undefined = undefined;
 // let audioContainer: Element | null;
 // let snareIndex = { b: 0, i: 0 };
 const impacts = new Map([
@@ -169,7 +171,8 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		settings.beatImpact == 0
 	)
 		return;
-
+	if (animationID) cancelAnimationFrame(animationID);
+	animationID = undefined;
 	// const maxImpact = { value: 0, time: performance.now() };
 	let clock = new Clock();
 	const leftMid = Math.min(
@@ -335,7 +338,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 		prevLeftMid = leftMid;
 		prevRightMid = rightMid;
 		prevSnare = snare;
-		requestAnimationFrame(tick);
+		animationID = requestAnimationFrame(tick);
 	}
 }
 
