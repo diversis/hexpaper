@@ -13,6 +13,7 @@ import {
 	ShaderMaterial,
 	Layers,
 	MeshPhysicalMaterial,
+	InstancedBufferGeometry,
 } from "three";
 import {
 	EffectComposer,
@@ -75,7 +76,7 @@ const cellColor = new Color(settings.baseColor);
 const raycaster = new Raycaster();
 const mouse = new Vector2(1, 1);
 
-const fov = 80;
+let fov = settings.cameraFov;
 
 let fpsMSLimit =
 	settings.fps === 0 ? 0 : 1000 / settings.fps;
@@ -97,7 +98,7 @@ export function init() {
 	if (!canvas || canvas.tagName !== "CANVAS") return;
 
 	renderer = new WebGLRenderer({
-		// antialias: false,
+		antialias: settings.antialias,
 		canvas,
 		alpha: true,
 	});
@@ -339,11 +340,20 @@ const _addGrid = () => {
 		6
 	);
 	hexGeometry.rotateX(Math.PI * 0.5);
+	const instancedHexGeometry =
+		new InstancedBufferGeometry();
+	instancedHexGeometry.index = hexGeometry.index;
+	instancedHexGeometry.attributes =
+		hexGeometry.attributes;
 
 	hexMesh = new MeshPhysicalMaterial({
 		color: settings.baseColor,
-		transparent: true,
+		transparent:
+			settings.tileOpacity < 1 ? true : false,
 		opacity: settings.tileOpacity,
+		flatShading: true,
+		iridescence: settings.hexMaterialIridescence,
+		reflectivity: settings.hexMaterialReflectivity,
 	});
 
 	const totalCols = Math.floor(
@@ -358,7 +368,7 @@ const _addGrid = () => {
 	let cellCount = totalRows * totalCols;
 
 	plane = new InstancedMesh(
-		hexGeometry,
+		instancedHexGeometry,
 		hexMesh,
 		cellCount
 	);
@@ -377,7 +387,7 @@ const _addGrid = () => {
 	centerY = settings.tileSize * 0.5 * (totalRows + 1);
 	camera.position.set(
 		centerX,
-		centerY,
+		centerY - settings.cameraYPosition,
 		CAMERA_Z_DISTANCE
 	);
 
@@ -419,7 +429,11 @@ const _addGrid = () => {
 			iCount++;
 		}
 	plane.applyMatrix4(
-		new Matrix4().makeTranslation(0, 0, 0.5)
+		new Matrix4().makeTranslation(
+			0,
+			0,
+			-settings.tileHeight
+		)
 	);
 };
 

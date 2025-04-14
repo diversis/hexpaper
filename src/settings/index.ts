@@ -111,11 +111,26 @@ const list = {
 			200
 		),
 	},
-antialias:{
-	value: false,
+	antialias: {
+		value: false,
 		onChange: () => {},
-}
-
+	},
+	cameraYPosition: {
+		value: 0,
+		onChange: debounce(init, 200),
+	},
+	hexMaterialIridescence: {
+		value: 0,
+		onChange: debounce(init, 200),
+	},
+	hexMaterialReflectivity: {
+		value: 0.5,
+		onChange: debounce(init, 200),
+	},
+	cameraFov: {
+		value: 70,
+		onChange: debounce(init, 200),
+	},
 	// rightSideVector: {
 	// 	value: RIGHT_SIDE_VECTOR,
 	// 	onChange: () => {},

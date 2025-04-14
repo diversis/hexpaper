@@ -98,6 +98,53 @@ export default function setupWallpaperEngineListener() {
 						0.0
 					);
 			}
+			// Tile Material Iridescence
+			if (properties.materialiridescence) {
+				const inputIridescence =
+					+properties.materialiridescence.value;
+				if (inputIridescence)
+					settings.hexMaterialIridescence =
+						Math.max(
+							Math.min(
+								Math.floor(
+									inputIridescence
+								) / 100,
+								1.0
+							),
+							0.0
+						);
+			}
+			// Tile Material Reflectivity
+			if (properties.materialreflectivity) {
+				const inputReflectivity =
+					+properties.materialreflectivity.value;
+				if (inputReflectivity)
+					settings.hexMaterialReflectivity =
+						Math.max(
+							Math.min(
+								Math.floor(
+									inputReflectivity
+								) / 100,
+								1.0
+							),
+							0.0
+						);
+			}
+			// Camera Y Position
+			// if (properties.camerayposition) {
+			// 	const inputCameraYPosition =
+			// 		+properties.camerayposition.value;
+			// 	if (inputCameraYPosition)
+			// 		settings.cameraYPosition = Math.max(
+			// 			Math.min(
+			// 				Math.floor(
+			// 					inputCameraYPosition
+			// 				),
+			// 				100.0
+			// 			),
+			// 			0.0
+			// 		);
+			// }
 
 			// Side Light intensity
 			if (properties.sidelightintensity) {
