@@ -111,6 +111,11 @@ const list = {
 			200
 		),
 	},
+antialias:{
+	value: false,
+		onChange: () => {},
+}
+
 	// rightSideVector: {
 	// 	value: RIGHT_SIDE_VECTOR,
 	// 	onChange: () => {},

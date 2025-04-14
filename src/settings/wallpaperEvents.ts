@@ -20,6 +20,11 @@ export default function setupWallpaperEngineListener() {
 		// 	}
 		// },
 		applyUserProperties: function (properties) {
+			// Antialias
+			if (properties.antialias) {
+				settings.antialias =
+					!!properties.antialias.value;
+			}
 			// FPS limit
 			if (properties.fps) {
 				const inputFps = +properties.fps.value;
