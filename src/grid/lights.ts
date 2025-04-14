@@ -59,11 +59,17 @@ export function addLights({
 	if (!scene || !settings.tileOpacity) return;
 	zAmplitude =
 		(settings.tileSize / 4) * settings.beatImpact;
-	const directBeatImpact = _getBeatImpact("direct");
+	const directBeatImpact = settings.beatEnabled
+		? _getBeatImpact("direct")
+		: 0;
 
-	const directTopBeatImpact = _getBeatImpact("direct");
+	const directTopBeatImpact = settings.beatEnabled
+		? _getBeatImpact("direct")
+		: 0;
 
-	const ambientBeatImpact = _getBeatImpact("ambient");
+	const ambientBeatImpact = settings.beatEnabled
+		? _getBeatImpact("ambient")
+		: 0;
 
 	// Lights
 	const ambientInitialIntensity =
@@ -96,7 +102,10 @@ export function addLights({
 		centerY + settings.tileSize,
 		-(
 			settings.tileHeight +
-			settings.tileSize * settings.beatImpact
+			settings.tileSize *
+				(settings.beatEnabled
+					? settings.beatImpact
+					: 1)
 		) * 2
 	);
 	dirLight1.position.copy(dirLight1Position);
@@ -120,7 +129,10 @@ export function addLights({
 		-centerY + settings.tileSize,
 		-(
 			settings.tileHeight +
-			settings.tileSize * settings.beatImpact
+			settings.tileSize *
+				(settings.beatEnabled
+					? settings.beatImpact
+					: 1)
 		) * 2
 	);
 	dirLight2.position.copy(dirLight2Position);
