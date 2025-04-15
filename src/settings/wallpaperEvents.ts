@@ -25,6 +25,15 @@ export default function setupWallpaperEngineListener() {
 				settings.antialias =
 					!!properties.antialias.value;
 			}
+			// Camera FOV
+			if (properties.fov) {
+				const inputFov = +properties.fov.value;
+				if (inputFov)
+					settings.cameraFov = Math.max(
+						Math.min(Math.floor(inputFov), 110),
+						50
+					);
+			}
 			// FPS limit
 			if (properties.fps) {
 				const inputFps = +properties.fps.value;

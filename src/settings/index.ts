@@ -21,6 +21,7 @@ import {
 } from "../grid/hexGrid";
 import { Color } from "three";
 import { setSideLightsColor } from "../grid/lights";
+import { requestRenderIfNotRequested } from "../grid/requestRender";
 
 // let settingsContainer: HTMLDivElement | null = null;
 
@@ -32,6 +33,12 @@ type SettingsList = {
 };
 
 const list = {
+	antialias: {
+		value: false,
+		onChange: () => {
+			requestRenderIfNotRequested();
+		},
+	},
 	fps: { value: FPS_LIMIT, onChange: () => {} },
 	tileHeight: {
 		value: TILE_HEIGHT,
@@ -48,10 +55,11 @@ const list = {
 	baseColor: {
 		value: BASE_COLOR,
 		onChange: debounce(() => {
-			resetGrid(),
-				(settings.baseThreeColor = new Color(
-					settings.baseColor
-				));
+			resetGrid();
+			requestRenderIfNotRequested();
+			settings.baseThreeColor = new Color(
+				settings.baseColor
+			);
 		}, 200),
 	},
 	tileSize: {
@@ -59,6 +67,7 @@ const list = {
 		onChange: debounce(() => {
 			_refreshGridVectors();
 			resetGrid();
+			requestRenderIfNotRequested();
 		}, 200),
 	},
 	tileWidth: {
@@ -79,11 +88,11 @@ const list = {
 	},
 	baseThreeColor: {
 		value: new Color(BASE_COLOR),
-		onChange: () => {},
+		onChange: () => requestRenderIfNotRequested(),
 	},
 	unit: {
 		value: UNIT,
-		onChange: () => {},
+		onChange: () => requestRenderIfNotRequested(),
 	},
 	sideLightIntensity: {
 		value: DIRECT_LIGHT_INTENSITY,
@@ -111,10 +120,7 @@ const list = {
 			200
 		),
 	},
-	antialias: {
-		value: false,
-		onChange: () => {},
-	},
+
 	cameraYPosition: {
 		value: 0,
 		onChange: debounce(init, 200),
@@ -128,7 +134,7 @@ const list = {
 		onChange: debounce(init, 200),
 	},
 	cameraFov: {
-		value: 70,
+		value: 90,
 		onChange: debounce(init, 200),
 	},
 	// rightSideVector: {

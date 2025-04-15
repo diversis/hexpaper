@@ -76,7 +76,7 @@ const cellColor = new Color(settings.baseColor);
 const raycaster = new Raycaster();
 const mouse = new Vector2(1, 1);
 
-let fov = settings.cameraFov;
+// let fov = settings.cameraFov;
 
 let fpsMSLimit =
 	settings.fps === 0 ? 0 : 1000 / settings.fps;
@@ -85,7 +85,7 @@ export function init() {
 	_removeEventListeners();
 	_clearScene();
 	camera = new PerspectiveCamera(
-		fov,
+		settings.cameraFov,
 		window.innerWidth / window.innerHeight,
 		0.1,
 		30
