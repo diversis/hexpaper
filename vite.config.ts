@@ -2,19 +2,19 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
 	base: "",
-	plugins: [
-		{
-			name: "crossorigin",
-			transformIndexHtml(html) {
-				return html
-					.replace(/crossorigin/g, "")
-					.replace(
-						/type=\"module\"/g,
-						`type="text/javascript"`
-					);
-			},
-		},
-	],
+	// plugins: [
+	// 	{
+	// 		name: "crossorigin",
+	// 		transformIndexHtml(html) {
+	// 			return html
+	// 				.replace(/crossorigin/g, "")
+	// 				.replace(
+	// 					/type=\"module\"/g,
+	// 					`type="text/javascript"`
+	// 				);
+	// 		},
+	// 	},
+	// ],
 	build: {
 		// dont minify JS and CSS
 		// minify: false,

@@ -72,13 +72,13 @@ export const animateClick = ({
 		settings.animationSpeed == 0
 			? 1
 			: settings.animationSpeed;
-	const introTime = 8 / animationSpeed;
-	const outroTime = 12 / animationSpeed;
+	const introTime = 4 / animationSpeed;
+	const outroTime = 2 / animationSpeed;
 	const totalTime = introTime + outroTime;
 
 	// Animate with tweenjs
 	const finalPosition = {
-		z: phaseZ * phaseDepth * 0.0625,
+		z: phaseZ * phaseDepth * 0.00625,
 	};
 	const finalScale = { z: 1 };
 	const finalRotation = {
@@ -153,23 +153,23 @@ export const animateClick = ({
 			);
 		});
 	const tweenToInitial = new Tween({
-		positionZ: tempCell.position.z,
-		scaleZ: tempCell.scale.z,
-		rotationX: tempCell.rotation.x,
-		rotationY: tempCell.rotation.y,
-		rotationZ: tempCell.rotation.z,
+		positionZ: finalPosition.z,
+		scaleZ: finalScale.z,
+		rotationX: finalRotation.x,
+		rotationY: finalRotation.y,
+		rotationZ: finalRotation.z,
 	})
 		.to(
 			{
-				positionZ: 0,
+				positionZ: 0.0,
 				scaleZ: 1,
-				rotationX: 0,
-				rotationY: 0,
-				rotationZ: 0,
+				rotationX: 0.0,
+				rotationY: 0.0,
+				rotationZ: 0.0,
 			},
 			1000 * outroTime
 		)
-		.easing(Easing.Elastic.Out)
+		.easing(Easing.Linear.Out)
 		.onUpdate(
 			({
 				positionZ,
@@ -178,18 +178,6 @@ export const animateClick = ({
 				rotationY,
 				rotationZ,
 			}) => {
-				updateCellMatrix(
-					tempCell,
-					{ z: positionZ },
-					{ z: scaleZ },
-					{
-						x: rotationX,
-						y: rotationY,
-						z: rotationZ,
-					},
-					plane,
-					instanceId
-				);
 				updateCellMatrix(
 					tempCell,
 					{ z: positionZ },
@@ -261,16 +249,19 @@ export const animateClick = ({
 		let t =
 			settings.animationSpeed *
 			clock.getElapsedTime();
-		// console.log("light tick: ", t);
+
 		if (t <= introTime) {
 			lerpToRNGColor.update(t / introTime);
-		} else if (!plane.userData.freeze[instanceId]) {
+		} else if (
+			!plane.userData.freeze[instanceId] &&
+			t <= totalTime
+		) {
 			lerpToBaseColor.update(
 				(t - introTime) / outroTime
 			);
 		}
-
-		if (t < totalTime) {
+		tweenGroup.update(timestamp);
+		if (t <= totalTime || !tweenGroup.allStopped()) {
 			requestRenderIfNotRequested();
 			window.requestAnimationFrame(tick);
 		} else {
@@ -283,7 +274,6 @@ export const animateClick = ({
 			}
 			requestRenderIfNotRequested();
 		}
-		tweenGroup.update(timestamp);
 	};
 	plane.userData.timers[instanceId] =
 		window.requestAnimationFrame(tick);

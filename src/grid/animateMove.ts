@@ -76,9 +76,8 @@ export const animateMove = ({
 			? 1
 			: settings.animationSpeed;
 	const introTime = 8 / animationSpeed;
-	const outroTime = 12 / animationSpeed;
+	const outroTime = 4 / animationSpeed;
 	const totalTime = introTime + outroTime;
-
 	// Animate with tweenjs
 
 	const tweenMove = new Tween({
@@ -150,19 +149,19 @@ export const animateMove = ({
 			);
 		});
 	const tweenToInitial = new Tween({
-		positionZ: tempCell.position.z,
-		scaleZ: tempCell.scale.z,
-		rotationX: tempCell.rotation.x,
-		rotationY: tempCell.rotation.y,
-		rotationZ: tempCell.rotation.z,
+		positionZ: phaseDepth * 0.0625,
+		scaleZ: 1 + phaseDepth * 0.0025,
+		rotationX: 0,
+		rotationY: phaseY * 0.03275,
+		rotationZ: phaseZ * 0.0625,
 	})
 		.to(
 			{
-				positionZ: 0,
+				positionZ: 0.0,
 				scaleZ: 1,
-				rotationX: 0,
-				rotationY: 0,
-				rotationZ: 0,
+				rotationX: 0.0,
+				rotationY: 0.0,
+				rotationZ: 0.0,
 			},
 			1000 * outroTime
 		)
@@ -175,18 +174,6 @@ export const animateMove = ({
 				rotationY,
 				rotationZ,
 			}) => {
-				updateCellMatrix(
-					tempCell,
-					{ z: positionZ },
-					{ z: scaleZ },
-					{
-						x: rotationX,
-						y: rotationY,
-						z: rotationZ,
-					},
-					plane,
-					instanceId
-				);
 				updateCellMatrix(
 					tempCell,
 					{ z: positionZ },
@@ -258,16 +245,19 @@ export const animateMove = ({
 		let t =
 			settings.animationSpeed *
 			clock.getElapsedTime();
-		// console.log("light tick: ", t);
+
 		if (t <= introTime) {
 			lerpToRNGColor.update(t / introTime);
-		} else if (!plane.userData.freeze[instanceId]) {
+		} else if (
+			!plane.userData.freeze[instanceId] &&
+			t <= totalTime
+		) {
 			lerpToBaseColor.update(
 				(t - introTime) / outroTime
 			);
 		}
-
-		if (t < totalTime) {
+		tweenGroup.update(timestamp);
+		if (t <= totalTime || !tweenGroup.allStopped()) {
 			requestRenderIfNotRequested();
 			window.requestAnimationFrame(tick);
 		} else {
@@ -280,7 +270,6 @@ export const animateMove = ({
 			}
 			requestRenderIfNotRequested();
 		}
-		tweenGroup.update(timestamp);
 	};
 	plane.userData.timers[instanceId] =
 		window.requestAnimationFrame(tick);
