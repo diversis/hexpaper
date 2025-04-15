@@ -10,7 +10,7 @@ import {
 	type Raycaster,
 	type Vector2,
 } from "three";
-import { Tween, Easing, Group } from "@tweenjs/tween.js";
+import { Tween, Easing } from "@tweenjs/tween.js";
 
 import { getIntersection } from "./getIntersection";
 
@@ -65,7 +65,7 @@ export const animateClick = ({
 
 	let clock = new Clock();
 
-	const { phaseDepth, phaseY, phaseX, phaseZ } =
+	const { phaseDepth, phaseZ } =
 		plane.userData.phases[instanceId];
 
 	const animationSpeed =
@@ -81,9 +81,10 @@ export const animateClick = ({
 		z: phaseZ * phaseDepth * 0.00625,
 	};
 	const finalScale = { z: 1 };
+	const randomSign = Math.sign(0.5 - Math.random());
 	const finalRotation = {
-		x: Math.sign(phaseX) * 4,
-		y: Math.sign(phaseY) * 4,
+		x: randomSign > 0 ? Math.PI : 0,
+		y: randomSign < 0 ? Math.PI : 0,
 		z: 0,
 	};
 	const tweenMove = new Tween({
@@ -129,10 +130,12 @@ export const animateClick = ({
 		.onComplete(() => {
 			updateCellMatrix(
 				tempCell,
-				{ z: finalPosition.z },
-				{ z: finalScale.z },
+				{ z: 0 },
+				{ z: 1 },
 				{
-					...finalRotation,
+					x: 0,
+					y: 0,
+					z: 0,
 				},
 				plane,
 				instanceId
@@ -152,79 +155,79 @@ export const animateClick = ({
 				instanceId
 			);
 		});
-	const tweenToInitial = new Tween({
-		positionZ: finalPosition.z,
-		scaleZ: finalScale.z,
-		rotationX: finalRotation.x,
-		rotationY: finalRotation.y,
-		rotationZ: finalRotation.z,
-	})
-		.to(
-			{
-				positionZ: 0.0,
-				scaleZ: 1,
-				rotationX: 0.0,
-				rotationY: 0.0,
-				rotationZ: 0.0,
-			},
-			1000 * outroTime
-		)
-		.easing(Easing.Linear.Out)
-		.onUpdate(
-			({
-				positionZ,
-				scaleZ,
-				rotationX,
-				rotationY,
-				rotationZ,
-			}) => {
-				updateCellMatrix(
-					tempCell,
-					{ z: positionZ },
-					{ z: scaleZ },
-					{
-						x: rotationX,
-						y: rotationY,
-						z: rotationZ,
-					},
-					plane,
-					instanceId
-				);
-			}
-		)
-		.onComplete(() => {
-			updateCellMatrix(
-				tempCell,
-				{ z: 0 },
-				{ z: 1 },
-				{
-					x: 0,
-					y: 0,
-					z: 0,
-				},
-				plane,
-				instanceId
-			);
-			plane.userData.tweens[instanceId] = null;
-		})
-		.onStop(() => {
-			updateCellMatrix(
-				tempCell,
-				{ z: 0 },
-				{ z: 1 },
-				{
-					x: 0,
-					y: 0,
-					z: 0,
-				},
-				plane,
-				instanceId
-			);
-		});
-	tweenMove.chain(tweenToInitial);
+	// const tweenToInitial = new Tween({
+	// 	positionZ: finalPosition.z,
+	// 	scaleZ: finalScale.z,
+	// 	rotationX: finalRotation.x,
+	// 	rotationY: finalRotation.y,
+	// 	rotationZ: finalRotation.z,
+	// })
+	// 	.to(
+	// 		{
+	// 			positionZ: 0.0,
+	// 			scaleZ: 1,
+	// 			rotationX: 0.0,
+	// 			rotationY: 0.0,
+	// 			rotationZ: 0.0,
+	// 		},
+	// 		1000 * outroTime
+	// 	)
+	// 	.easing(Easing.Linear.Out)
+	// 	.onUpdate(
+	// 		({
+	// 			positionZ,
+	// 			scaleZ,
+	// 			rotationX,
+	// 			rotationY,
+	// 			rotationZ,
+	// 		}) => {
+	// 			updateCellMatrix(
+	// 				tempCell,
+	// 				{ z: positionZ },
+	// 				{ z: scaleZ },
+	// 				{
+	// 					x: rotationX,
+	// 					y: rotationY,
+	// 					z: rotationZ,
+	// 				},
+	// 				plane,
+	// 				instanceId
+	// 			);
+	// 		}
+	// 	)
+	// 	.onComplete(() => {
+	// 		updateCellMatrix(
+	// 			tempCell,
+	// 			{ z: 0 },
+	// 			{ z: 1 },
+	// 			{
+	// 				x: 0,
+	// 				y: 0,
+	// 				z: 0,
+	// 			},
+	// 			plane,
+	// 			instanceId
+	// 		);
+	// 		plane.userData.tweens[instanceId] = null;
+	// 	})
+	// 	.onStop(() => {
+	// 		updateCellMatrix(
+	// 			tempCell,
+	// 			{ z: 0 },
+	// 			{ z: 1 },
+	// 			{
+	// 				x: 0,
+	// 				y: 0,
+	// 				z: 0,
+	// 			},
+	// 			plane,
+	// 			instanceId
+	// 		);
+	// 	});
+	// tweenMove.chain(tweenToInitial);
 	plane.userData.tweens[instanceId] = tweenMove;
 	tweenMove.start();
-	const tweenGroup = new Group(tweenMove, tweenToInitial);
+	// const tweenGroup = new Group(tweenMove, tweenToInitial);
 	let currentColor = new Color();
 	plane.getColorAt(instanceId, currentColor);
 	const colorRNG = getRNGColor();
@@ -260,8 +263,8 @@ export const animateClick = ({
 				(t - introTime) / outroTime
 			);
 		}
-		tweenGroup.update(timestamp);
-		if (t <= totalTime || !tweenGroup.allStopped()) {
+		tweenMove.update(timestamp);
+		if (t <= totalTime || tweenMove.isPlaying()) {
 			requestRenderIfNotRequested();
 			window.requestAnimationFrame(tick);
 		} else {
