@@ -11,8 +11,8 @@ import {
 
 export const addHexCell = (
 	dummy: Object3D,
-	cVector: Vector3,
-	rVector: Vector3,
+	centerVector: Vector3,
+	// rVector: Vector3,
 	iCount: number,
 	plane: InstancedMesh<
 		BufferGeometry<NormalBufferAttributes>,
@@ -22,7 +22,7 @@ export const addHexCell = (
 	cellColor: Color
 ) => {
 	if (!plane) return;
-	dummy.position.copy(cVector.add(rVector));
+	dummy.position.copy(centerVector);
 	dummy.updateMatrix();
 	plane.setMatrixAt(iCount, dummy.matrix);
 	plane.setColorAt(iCount, cellColor);

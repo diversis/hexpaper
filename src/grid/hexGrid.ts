@@ -417,11 +417,10 @@ const _addGrid = () => {
 					0
 				);
 			}
-
+			const centerVector = cVector.add(rVector);
 			addHexCell(
 				dummy,
-				cVector,
-				rVector,
+				centerVector,
 				iCount,
 				plane,
 				cellColor

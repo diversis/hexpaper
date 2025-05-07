@@ -86,74 +86,73 @@ export function addLights({
 		light: ambiLight,
 		initialIntensity: ambientInitialIntensity,
 	});
+	if (settings.enableLeftSideLight) {
+		const leftLightInitialIntensity =
+			_getInitialLightIntensity(
+				settings.leftSideLightIntensity,
+				directBeatImpact
+			);
 
-	const directInitialIntensity =
-		_getInitialLightIntensity(
-			settings.sideLightIntensity,
-			directBeatImpact
+		const dirLight1 = new DirectionalLight(
+			settings.leftSideLightColor,
+			leftLightInitialIntensity
 		);
+		const dirLight1Position = new Vector3(
+			-centerX * 0.5 - settings.tileSize,
+			centerY + settings.tileSize,
+			(settings.tileHeight +
+				settings.tileSize *
+					(settings.beatEnabled
+						? settings.beatImpact
+						: 1)) *
+				2
+		);
+		dirLight1.position.copy(dirLight1Position);
+		dirLight1.lookAt(centerX, centerY, 0);
+		scene.add(dirLight1);
+		lights.set("left", {
+			light: dirLight1,
+			initialIntensity: leftLightInitialIntensity,
+			initialPosition: dirLight1Position,
+		});
+	}
+	if (settings.enableRightSideLight) {
+		const rightLightInitialIntensity =
+			_getInitialLightIntensity(
+				settings.leftSideLightIntensity,
+				directBeatImpact
+			);
 
-	const dirLight1 = new DirectionalLight(
-		settings.leftSideLightColor,
-		directInitialIntensity
-	);
-	const dirLight1Position = new Vector3(
-		-centerX * 0.5 - settings.tileSize,
-		centerY + settings.tileSize,
-		-(
-			settings.tileHeight +
-			settings.tileSize *
-				(settings.beatEnabled
-					? settings.beatImpact
-					: 1)
-		) * 2
-	);
-	dirLight1.position.copy(dirLight1Position);
-	dirLight1.lookAt(centerX, centerY, 0);
-	scene.add(dirLight1);
-	lights.set("left", {
-		light: dirLight1,
-		initialIntensity: directInitialIntensity,
-		initialPosition: dirLight1Position,
-	});
-
-	const dirLight2 = new DirectionalLight(
-		settings.rightSideLightColor,
-		_getInitialLightIntensity(
-			settings.sideLightIntensity,
-			directBeatImpact
-		)
-	);
-	const dirLight2Position = new Vector3(
-		centerX * 0.5 + settings.tileSize,
-		-centerY + settings.tileSize,
-		-(
-			settings.tileHeight +
-			settings.tileSize *
-				(settings.beatEnabled
-					? settings.beatImpact
-					: 1)
-		) * 2
-	);
-	dirLight2.position.copy(dirLight2Position);
-	dirLight2.lookAt(centerX, centerY, 0);
-	scene.add(dirLight2);
-	lights.set("right", {
-		light: dirLight2,
-		initialIntensity: directInitialIntensity,
-		initialPosition: dirLight2Position,
-	});
-
+		const dirLight2 = new DirectionalLight(
+			settings.rightSideLightColor,
+			rightLightInitialIntensity
+		);
+		const dirLight2Position = new Vector3(
+			centerX * 0.5 + settings.tileSize,
+			-centerY + settings.tileSize,
+			(settings.tileHeight +
+				settings.tileSize *
+					(settings.beatEnabled
+						? settings.beatImpact
+						: 1)) *
+				2
+		);
+		dirLight2.position.copy(dirLight2Position);
+		dirLight2.lookAt(centerX, centerY, 0);
+		scene.add(dirLight2);
+		lights.set("right", {
+			light: dirLight2,
+			initialIntensity: rightLightInitialIntensity,
+			initialPosition: dirLight2Position,
+		});
+	}
 	const topInitialIntensity = _getInitialLightIntensity(
-		DIRECT_TOP_LIGHT_INTENSITY,
+		settings.topLightIntensity,
 		directTopBeatImpact
 	);
 	const dirLight3 = new DirectionalLight(
 		0xeeeeee,
-		_getInitialLightIntensity(
-			DIRECT_TOP_LIGHT_INTENSITY,
-			directBeatImpact
-		)
+		topInitialIntensity
 	);
 	const dirLight3Position = new Vector3(
 		0,
@@ -265,7 +264,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 			settings.beatImpact,
 			snare,
 			leftLight.initialIntensity,
-			settings.sideLightIntensity
+			settings.leftSideLightIntensity
 		);
 		leftLightPositionLerp = _positionLerpOnBeat(
 			leftLight.light,
@@ -288,7 +287,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 			settings.beatImpact,
 			snare,
 			rightLight.initialIntensity,
-			settings.sideLightIntensity
+			settings.rightSideLightIntensity
 		);
 		rightLightPositionLerp = _positionLerpOnBeat(
 			rightLight.light,

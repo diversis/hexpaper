@@ -5,6 +5,7 @@ import {
 	BEAT_ENABLED,
 	BEAT_IMPACT,
 	DIRECT_LIGHT_INTENSITY,
+	DIRECT_TOP_LIGHT_INTENSITY,
 	FPS_LIMIT,
 	LEFT_SIDE_LIGHT_COLOR,
 	RIGHT_SIDE_LIGHT_COLOR,
@@ -94,7 +95,19 @@ const list = {
 		value: UNIT,
 		onChange: () => requestRenderIfNotRequested(),
 	},
-	sideLightIntensity: {
+	enableLeftSideLight: {
+		value: true,
+		onChange: debounce(resetLights, 200),
+	},
+	enableRightSideLight: {
+		value: true,
+		onChange: debounce(resetLights, 200),
+	},
+	leftSideLightIntensity: {
+		value: DIRECT_LIGHT_INTENSITY,
+		onChange: debounce(resetLights, 200),
+	},
+	rightSideLightIntensity: {
 		value: DIRECT_LIGHT_INTENSITY,
 		onChange: debounce(resetLights, 200),
 	},
@@ -120,7 +133,10 @@ const list = {
 			200
 		),
 	},
-
+	topLightIntensity: {
+		value: DIRECT_TOP_LIGHT_INTENSITY,
+		onChange: debounce(resetLights, 200),
+	},
 	cameraYPosition: {
 		value: 0,
 		onChange: debounce(init, 200),

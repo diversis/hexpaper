@@ -76,7 +76,7 @@ export const animateMove = ({
 			? 1
 			: settings.animationSpeed;
 	const introTime = 8 / animationSpeed;
-	const outroTime = 4 / animationSpeed;
+	const outroTime = 2 / animationSpeed;
 	const totalTime = introTime + outroTime;
 	// Animate with tweenjs
 
@@ -92,8 +92,8 @@ export const animateMove = ({
 				positionZ: phaseDepth * 0.0625,
 				scaleZ: 1 + phaseDepth * 0.0025,
 				rotationX: 0,
-				rotationY: phaseY * 0.03275,
-				rotationZ: phaseZ * 0.0625,
+				rotationY: 0,
+				rotationZ: 0,
 			},
 			1000 * introTime
 		)
@@ -152,8 +152,8 @@ export const animateMove = ({
 		positionZ: phaseDepth * 0.0625,
 		scaleZ: 1 + phaseDepth * 0.0025,
 		rotationX: 0,
-		rotationY: phaseY * 0.03275,
-		rotationZ: phaseZ * 0.0625,
+		rotationY: 0,
+		rotationZ: 0,
 	})
 		.to(
 			{
