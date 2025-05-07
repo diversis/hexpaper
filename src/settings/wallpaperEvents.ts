@@ -219,7 +219,7 @@ export default function setupWallpaperEngineListener() {
 			if (properties.toplightintensity) {
 				const inputIntensity =
 					+properties.toplightintensity.value /
-					10;
+					100;
 				if (inputIntensity)
 					settings.topLightIntensity = Math.max(
 						Math.min(inputIntensity, 3),
