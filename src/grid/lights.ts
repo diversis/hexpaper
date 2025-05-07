@@ -11,7 +11,6 @@ import {
 import {
 	AMBIENT_LIGHT_INTENSITY,
 	DIRECT_LIGHT_INTENSITY,
-	DIRECT_TOP_LIGHT_INTENSITY,
 } from "../lib/constants/utils";
 import settings from "../settings";
 import { requestRenderIfNotRequested } from "./requestRender";
@@ -100,12 +99,13 @@ export function addLights({
 		const dirLight1Position = new Vector3(
 			-centerX * 0.5 - settings.tileSize,
 			centerY + settings.tileSize,
-			(settings.tileHeight +
+			-(
+				settings.tileHeight +
 				settings.tileSize *
 					(settings.beatEnabled
 						? settings.beatImpact
-						: 1)) *
-				2
+						: 1)
+			) * 2
 		);
 		dirLight1.position.copy(dirLight1Position);
 		dirLight1.lookAt(centerX, centerY, 0);
@@ -130,12 +130,13 @@ export function addLights({
 		const dirLight2Position = new Vector3(
 			centerX * 0.5 + settings.tileSize,
 			-centerY + settings.tileSize,
-			(settings.tileHeight +
+			-(
+				settings.tileHeight +
 				settings.tileSize *
 					(settings.beatEnabled
 						? settings.beatImpact
-						: 1)) *
-				2
+						: 1)
+			) * 2
 		);
 		dirLight2.position.copy(dirLight2Position);
 		dirLight2.lookAt(centerX, centerY, 0);
@@ -146,27 +147,30 @@ export function addLights({
 			initialPosition: dirLight2Position,
 		});
 	}
-	const topInitialIntensity = _getInitialLightIntensity(
-		settings.topLightIntensity,
-		directTopBeatImpact
-	);
-	const dirLight3 = new DirectionalLight(
-		0xeeeeee,
-		topInitialIntensity
-	);
-	const dirLight3Position = new Vector3(
-		0,
-		0,
-		100 * settings.unit
-	);
-	dirLight3.position.copy(dirLight3Position);
-	dirLight3.lookAt(centerX, centerY, 0);
-	scene.add(dirLight3);
-	lights.set("top", {
-		light: dirLight3,
-		initialIntensity: topInitialIntensity,
-		initialPosition: dirLight3Position,
-	});
+	if (settings.enableTopLight) {
+		const topInitialIntensity =
+			_getInitialLightIntensity(
+				settings.topLightIntensity,
+				directTopBeatImpact
+			);
+		const dirLight3 = new DirectionalLight(
+			0xeeeeee,
+			topInitialIntensity
+		);
+		const dirLight3Position = new Vector3(
+			0,
+			0,
+			100 * settings.unit
+		);
+		dirLight3.position.copy(dirLight3Position);
+		dirLight3.lookAt(centerX, centerY, 0);
+		scene.add(dirLight3);
+		lights.set("top", {
+			light: dirLight3,
+			initialIntensity: topInitialIntensity,
+			initialPosition: dirLight3Position,
+		});
+	}
 	// audioContainer =
 	// 	audioContainer ||
 	// 	document.querySelector("#audio-container");
@@ -308,7 +312,7 @@ export function animateLightsOnBeat(audioArray: number[]) {
 			settings.beatImpact,
 			maxBeat,
 			topLight.initialIntensity,
-			DIRECT_TOP_LIGHT_INTENSITY
+			settings.topLightIntensity
 		);
 	}
 	const tick = () => {

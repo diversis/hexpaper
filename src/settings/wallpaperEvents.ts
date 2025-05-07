@@ -155,15 +155,20 @@ export default function setupWallpaperEngineListener() {
 			// 		);
 			// }
 
+			// Top Light enabled
+			if (properties.enabletoplight) {
+				settings.enableTopLight =
+					!!properties.enabletoplight.value;
+			}
 			// Left Side Light enabled
-			if (properties.enableleftsidelight) {
+			if (properties.enableleftlight) {
 				settings.enableLeftSideLight =
-					!!properties.enableleftsidelight.value;
+					!!properties.enableleftlight.value;
 			}
 			// Right Side Light enabled
-			if (properties.enablerightsidelight) {
+			if (properties.enablerightlight) {
 				settings.enableRightSideLight =
-					!!properties.enablerightsidelight.value;
+					!!properties.enablerightlight.value;
 			}
 			// Left Side Light intensity
 			if (properties.sidelightintensity) {

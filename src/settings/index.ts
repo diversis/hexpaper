@@ -95,6 +95,10 @@ const list = {
 		value: UNIT,
 		onChange: () => requestRenderIfNotRequested(),
 	},
+	enableTopLight: {
+		value: true,
+		onChange: debounce(resetLights, 200),
+	},
 	enableLeftSideLight: {
 		value: true,
 		onChange: debounce(resetLights, 200),
