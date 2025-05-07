@@ -222,7 +222,7 @@ export default function setupWallpaperEngineListener() {
 					100;
 				if (inputIntensity)
 					settings.topLightIntensity = Math.max(
-						Math.min(inputIntensity, 3),
+						Math.min(inputIntensity, 1),
 						0
 					);
 			}
