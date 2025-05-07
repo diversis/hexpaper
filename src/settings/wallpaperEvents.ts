@@ -58,7 +58,7 @@ export default function setupWallpaperEngineListener() {
 			// Tile Size
 			if (properties.tilesize) {
 				const inputSize =
-					+properties.tilesize.value;
+					+properties.tilesize.value / 100;
 				if (inputSize)
 					settings.tileSize = Math.max(
 						Math.min(inputSize, 2.0),
@@ -69,7 +69,7 @@ export default function setupWallpaperEngineListener() {
 			// Tile Width
 			if (properties.tilewidth) {
 				const inputWidth =
-					+properties.tilewidth.value;
+					+properties.tilewidth.value / 100;
 				if (inputWidth)
 					settings.tileWidth = Math.max(
 						Math.min(
@@ -155,16 +155,39 @@ export default function setupWallpaperEngineListener() {
 			// 		);
 			// }
 
-			// Side Light intensity
+			// Left Side Light enabled
+			if (properties.enableleftsidelight) {
+				settings.enableLeftSideLight =
+					!!properties.enableleftsidelight;
+			}
+			// Right Side Light enabled
+			if (properties.enablerightsidelight) {
+				settings.enableRightSideLight =
+					!!properties.enablerightsidelight;
+			}
+			// Left Side Light intensity
 			if (properties.sidelightintensity) {
 				const inputIntensity =
 					+properties.sidelightintensity.value /
 					10;
 				if (inputIntensity)
-					settings.sideLightIntensity = Math.max(
-						Math.min(inputIntensity, 3),
-						0
-					);
+					settings.leftSideLightIntensity =
+						Math.max(
+							Math.min(inputIntensity, 3),
+							0
+						);
+			}
+			// Right Side Light intensity
+			if (properties.sidelightintensity) {
+				const inputIntensity =
+					+properties.sidelightintensity.value /
+					10;
+				if (inputIntensity)
+					settings.rightSideLightIntensity =
+						Math.max(
+							Math.min(inputIntensity, 3),
+							0
+						);
 			}
 
 			// Left Side Light color
@@ -190,6 +213,17 @@ export default function setupWallpaperEngineListener() {
 				settings.rightSideLightColor =
 					_convertColor(
 						properties.rightsidelightcolor.value
+					);
+			}
+			// Top Light intensity
+			if (properties.toplightintensity) {
+				const inputIntensity =
+					+properties.toplightintensity.value /
+					10;
+				if (inputIntensity)
+					settings.topLightIntensity = Math.max(
+						Math.min(inputIntensity, 3),
+						0
 					);
 			}
 
