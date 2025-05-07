@@ -158,12 +158,12 @@ export default function setupWallpaperEngineListener() {
 			// Left Side Light enabled
 			if (properties.enableleftsidelight) {
 				settings.enableLeftSideLight =
-					!!properties.enableleftsidelight;
+					!!properties.enableleftsidelight.value;
 			}
 			// Right Side Light enabled
 			if (properties.enablerightsidelight) {
 				settings.enableRightSideLight =
-					!!properties.enablerightsidelight;
+					!!properties.enablerightsidelight.value;
 			}
 			// Left Side Light intensity
 			if (properties.sidelightintensity) {
