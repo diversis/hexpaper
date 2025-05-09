@@ -418,7 +418,7 @@ function _positionLerpOnBeat(
 	initialPosition?: Vector3
 ) {
 	if (!initialPosition) return;
-	const amplitude = Math.sin(beatImpact * beat * 0.5);
+	const amplitude = Math.sin(beatImpact * beat * Math.PI);
 
 	const zMax = initialPosition.z * zAmplitude;
 	let zPos = zMax * (1 - amplitude) * (zAmplitude || 1);
@@ -426,14 +426,8 @@ function _positionLerpOnBeat(
 		zPos = zMax;
 	}
 	const newPosition = {
-		x:
-			initialPosition.x > 0
-				? initialPosition.x * (1 + amplitude)
-				: initialPosition.x * (1 - amplitude),
-		y:
-			initialPosition.y > 0
-				? initialPosition.y * (1 + amplitude)
-				: initialPosition.y * (1 - amplitude),
+		x: initialPosition.x * (1 + amplitude),
+		y: initialPosition.y * (1 + amplitude),
 		z: zPos,
 	};
 
