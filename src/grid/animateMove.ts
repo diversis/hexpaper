@@ -75,9 +75,10 @@ export const animateMove = ({
 		settings.animationSpeed == 0
 			? 1
 			: settings.animationSpeed;
-	const introTime = (phaseDepth / 4 + 6) / animationSpeed;
+	const introTime =
+		(phaseDepth * 0.25 + 6) / animationSpeed;
 	const outroTime =
-		((phaseDepth + 2) * 0.25) / animationSpeed;
+		(phaseDepth * 0.125 + 4) / animationSpeed;
 	const totalTime = introTime + outroTime;
 	// Animate with tweenjs
 	const deltaScale = phaseDepth * 0.0025;
@@ -171,7 +172,7 @@ export const animateMove = ({
 			},
 			1000 * outroTime
 		)
-		.easing(Easing.Linear.Out)
+		.easing(Easing.Exponential.In)
 		.onUpdate(
 			({
 				positionZ,
@@ -223,6 +224,7 @@ export const animateMove = ({
 				instanceId
 			);
 		});
+
 	tweenMove.chain(tweenToInitial);
 	plane.userData.tweens[instanceId] = tweenMove;
 	tweenMove.start();
@@ -230,7 +232,6 @@ export const animateMove = ({
 	let currentColor = new Color();
 	plane.getColorAt(instanceId, currentColor);
 	const colorRNG = getRNGColor();
-
 	const lerpToRNGColor = animateCellColor(
 		plane,
 		instanceId,
@@ -254,13 +255,20 @@ export const animateMove = ({
 
 		if (t <= introTime) {
 			lerpToRNGColor.update(t / introTime);
-		} else if (
-			!plane.userData.freeze[instanceId] &&
-			t <= totalTime
-		) {
-			lerpToBaseColor.update(
-				(t - introTime) / outroTime
-			);
+		} else if (!plane.userData.freeze[instanceId]) {
+			if (t < totalTime) {
+				const delta = t - introTime;
+				lerpToBaseColor.update(
+					delta > 0
+						? Math.pow(
+								4096,
+								delta / outroTime - 1
+						  )
+						: 0
+				);
+			} else if (t == totalTime) {
+				lerpToBaseColor.update(1);
+			}
 		}
 		tweenGroup.update(timestamp);
 		if (t <= totalTime || !tweenGroup.allStopped()) {

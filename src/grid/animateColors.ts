@@ -36,6 +36,7 @@ export function animateCellColor(
 	return {
 		update: (delta: number) => {
 			if (delta > 1) delta = 1;
+
 			from.lerp(to, delta);
 			if (!from) return;
 			plane.setColorAt(instanceId, from);
