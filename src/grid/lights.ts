@@ -158,8 +158,8 @@ export function addLights({
 			topInitialIntensity
 		);
 		const dirLight3Position = new Vector3(
-			0,
-			0,
+			-(centerX + settings.unit),
+			centerY + settings.unit,
 			100 * settings.unit
 		);
 		dirLight3.position.copy(dirLight3Position);

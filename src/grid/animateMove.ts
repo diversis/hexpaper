@@ -68,17 +68,23 @@ export const animateMove = ({
 	}
 	let clock = new Clock();
 
-	const { phaseDepth, phaseY, phaseZ } =
+	const { phaseDepth } =
 		plane.userData.phases[instanceId];
 
 	const animationSpeed =
 		settings.animationSpeed == 0
 			? 1
 			: settings.animationSpeed;
-	const introTime = 8 / animationSpeed;
-	const outroTime = 2 / animationSpeed;
+	const introTime = (phaseDepth / 4 + 6) / animationSpeed;
+	const outroTime =
+		((phaseDepth + 2) * 0.25) / animationSpeed;
 	const totalTime = introTime + outroTime;
 	// Animate with tweenjs
+	const deltaScale = phaseDepth * 0.0025;
+	const finalScale = { z: 1 + deltaScale };
+	const finalPosition = {
+		z: phaseDepth * 0.0625 + deltaScale,
+	};
 
 	const tweenMove = new Tween({
 		positionZ: tempCell.position.z,
@@ -89,8 +95,8 @@ export const animateMove = ({
 	})
 		.to(
 			{
-				positionZ: phaseDepth * 0.0625,
-				scaleZ: 1 + phaseDepth * 0.0025,
+				positionZ: finalPosition.z,
+				scaleZ: finalScale.z,
 				rotationX: 0,
 				rotationY: 0,
 				rotationZ: 0,
@@ -123,12 +129,12 @@ export const animateMove = ({
 		.onComplete(() => {
 			updateCellMatrix(
 				tempCell,
-				{ z: phaseDepth * 0.0625 },
-				{ z: 1 + phaseDepth * 0.0025 },
+				{ z: finalPosition.z },
+				{ z: finalScale.z },
 				{
 					x: 0,
-					y: phaseY * 0.03275,
-					z: phaseZ * 0.0625,
+					y: 0,
+					z: 0,
 				},
 				plane,
 				instanceId
@@ -149,8 +155,8 @@ export const animateMove = ({
 			);
 		});
 	const tweenToInitial = new Tween({
-		positionZ: phaseDepth * 0.0625,
-		scaleZ: 1 + phaseDepth * 0.0025,
+		positionZ: finalPosition.z,
+		scaleZ: finalScale.z,
 		rotationX: 0,
 		rotationY: 0,
 		rotationZ: 0,
